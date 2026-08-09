@@ -9,33 +9,41 @@ interface Props {
 export default function ResultCard({ result }: Props) {
   return (
     <View style={styles.card}>
-      <Text style={styles.summary}>{result.summary}</Text>
+      <View style={[
+        styles.summaryBox,
+        result.isEligibleForAny ? styles.summarySuccess : styles.summaryNeutral
+      ]}>
+        <Text style={styles.summary}>{result.summary}</Text>
+      </View>
 
       {result.devices.map((device, idx) => (
         <View key={idx} style={styles.deviceBox}>
-          <Text style={styles.deviceName}>{device.name}</Text>
-          <Text style={{ 
-            color: device.eligible ? Colors.secondary : Colors.danger, 
-            fontWeight: 'bold',
-            marginBottom: 6
-          }}>
-            {device.eligible ? '✅ ÉLIGIBLE' : '❌ NON ÉLIGIBLE'}
-          </Text>
+          <View style={styles.deviceHeader}>
+            <Text style={styles.deviceName}>{device.name}</Text>
+            <View style={[
+              styles.badge,
+              device.eligible ? styles.badgeSuccess : styles.badgeDanger
+            ]}>
+              <Text style={styles.badgeText}>
+                {device.eligible ? 'ÉLIGIBLE' : 'NON ÉLIGIBLE'}
+              </Text>
+            </View>
+          </View>
           
           {device.amount != null && (
             <Text style={styles.amount}>{device.amount.toLocaleString('fr-MA')} DH</Text>
           )}
 
           {device.advantages.length > 0 && (
-            <View style={{ marginTop: 6 }}>
+            <View style={styles.list}>
               {device.advantages.map((a, i) => (
-                <Text key={i} style={styles.advantage}>• {a}</Text>
+                <Text key={i} style={styles.advantage}>✓ {a}</Text>
               ))}
             </View>
           )}
 
           {device.refusalReasons.length > 0 && (
-            <View style={{ marginTop: 6 }}>
+            <View style={styles.list}>
               {device.refusalReasons.map((r, i) => (
                 <Text key={i} style={styles.refusal}>• {r}</Text>
               ))}
@@ -45,9 +53,11 @@ export default function ResultCard({ result }: Props) {
       ))}
 
       {result.notaryFees > 0 && (
-        <Text style={styles.info}>
-          ℹ️ Frais de notaire plafonnés à {result.notaryFees.toLocaleString('fr-MA')} DH pour les logements ≤ 700 000 DH.
-        </Text>
+        <View style={styles.infoBox}>
+          <Text style={styles.info}>
+            ℹ️ Frais de notaire plafonnés à {result.notaryFees.toLocaleString('fr-MA')} DH (logements ≤ 700 000 DH)
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -56,53 +66,101 @@ export default function ResultCard({ result }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginTop: 16,
-    elevation: 2,
+    borderTopWidth: 3,
+    borderTopColor: Colors.secondary,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
     shadowRadius: 8,
+    elevation: 3,
+  },
+  summaryBox: {
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+  },
+  summarySuccess: {
+    backgroundColor: Colors.successBg,
+  },
+  summaryNeutral: {
+    backgroundColor: Colors.infoBg,
   },
   summary: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 14,
+    fontSize: 15,
+    fontWeight: '700',
     color: Colors.text,
     lineHeight: 22,
   },
   deviceBox: {
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#F8FAFC',
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  deviceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
   },
   deviceName: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginBottom: 4,
+    fontWeight: '700',
+    fontSize: 14,
     color: Colors.primary,
+    flex: 1,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  badgeSuccess: {
+    backgroundColor: Colors.secondary,
+  },
+  badgeDanger: {
+    backgroundColor: Colors.danger,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
   },
   amount: {
-    fontSize: 26,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: Colors.secondary,
-    marginTop: 4,
+    marginVertical: 6,
+  },
+  list: {
+    marginTop: 6,
   },
   advantage: {
-    color: Colors.secondary,
+    color: Colors.secondaryDark,
     fontSize: 13,
     lineHeight: 20,
+    marginBottom: 2,
   },
   refusal: {
     color: Colors.danger,
     fontSize: 13,
     lineHeight: 20,
+    marginBottom: 2,
+  },
+  infoBox: {
+    backgroundColor: Colors.infoBg,
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 4,
   },
   info: {
-    marginTop: 12,
     fontSize: 13,
-    color: Colors.textLight,
-    fontStyle: 'italic',
+    color: Colors.primary,
+    lineHeight: 18,
   },
 });
