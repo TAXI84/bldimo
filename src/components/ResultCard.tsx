@@ -17,9 +17,9 @@ export default function ResultCard({ result }: Props) {
       </View>
 
       {result.devices.map((device, idx) => (
-        <View key={idx} style={styles.deviceBox}>
+        <View key={device.id || idx} style={styles.deviceBox}>
           <View style={styles.deviceHeader}>
-            <Text style={styles.deviceName}>{device.name}</Text>
+            <Text style={styles.deviceName}>{device.shortName || device.name}</Text>
             <View style={[
               styles.badge,
               device.eligible ? styles.badgeSuccess : styles.badgeDanger
@@ -30,6 +30,8 @@ export default function ResultCard({ result }: Props) {
             </View>
           </View>
           
+          <Text style={styles.deviceFullName}>{device.name}</Text>
+
           {device.amount != null && (
             <Text style={styles.amount}>{device.amount.toLocaleString('fr-MA')} DH</Text>
           )}
@@ -52,10 +54,19 @@ export default function ResultCard({ result }: Props) {
         </View>
       ))}
 
+      {result.documents && result.documents.length > 0 && (
+        <View style={styles.docsBox}>
+          <Text style={styles.docsTitle}>Documents à préparer</Text>
+          {result.documents.map((doc, i) => (
+            <Text key={i} style={styles.docItem}>• {doc}</Text>
+          ))}
+        </View>
+      )}
+
       {result.notaryFees > 0 && (
         <View style={styles.infoBox}>
           <Text style={styles.info}>
-            ℹ️ Frais de notaire plafonnés à {result.notaryFees.toLocaleString('fr-MA')} DH (logements ≤ 700 000 DH)
+            ℹ️ Frais de notaire plafonnés pour les logements ≤ 700 000 DH
           </Text>
         </View>
       )}
@@ -71,29 +82,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderTopWidth: 3,
     borderTopColor: Colors.secondary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
     elevation: 3,
   },
-  summaryBox: {
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 14,
-  },
-  summarySuccess: {
-    backgroundColor: Colors.successBg,
-  },
-  summaryNeutral: {
-    backgroundColor: Colors.infoBg,
-  },
-  summary: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.text,
-    lineHeight: 22,
-  },
+  summaryBox: { padding: 14, borderRadius: 12, marginBottom: 14 },
+  summarySuccess: { backgroundColor: Colors.successBg },
+  summaryNeutral: { backgroundColor: Colors.infoBg },
+  summary: { fontSize: 15, fontWeight: '700', color: Colors.text, lineHeight: 22 },
   deviceBox: {
     backgroundColor: '#F8FAFC',
     padding: 14,
@@ -106,61 +100,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
     gap: 8,
   },
-  deviceName: {
-    fontWeight: '700',
-    fontSize: 14,
-    color: Colors.primary,
-    flex: 1,
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  badgeSuccess: {
-    backgroundColor: Colors.secondary,
-  },
-  badgeDanger: {
-    backgroundColor: Colors.danger,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  amount: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: Colors.secondary,
-    marginVertical: 6,
-  },
-  list: {
-    marginTop: 6,
-  },
-  advantage: {
-    color: Colors.secondaryDark,
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 2,
-  },
-  refusal: {
-    color: Colors.danger,
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 2,
-  },
-  infoBox: {
-    backgroundColor: Colors.infoBg,
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 4,
-  },
-  info: {
-    fontSize: 13,
-    color: Colors.primary,
-    lineHeight: 18,
-  },
+  deviceName: { fontWeight: '800', fontSize: 15, color: Colors.primary, flex: 1 },
+  deviceFullName: { fontSize: 12, color: Colors.textLight, marginBottom: 8 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  badgeSuccess: { backgroundColor: Colors.secondary },
+  badgeDanger: { backgroundColor: Colors.danger },
+  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  amount: { fontSize: 26, fontWeight: '800', color: Colors.secondary, marginVertical: 6 },
+  list: { marginTop: 4 },
+  advantage: { color: Colors.secondaryDark, fontSize: 13, lineHeight: 20, marginBottom: 2 },
+  refusal: { color: Colors.danger, fontSize: 13, lineHeight: 20, marginBottom: 2 },
+  docsBox: { backgroundColor: Colors.infoBg, padding: 14, borderRadius: 12, marginTop: 6 },
+  docsTitle: { fontWeight: '700', color: Colors.primary, marginBottom: 8, fontSize: 14 },
+  docItem: { fontSize: 13, color: Colors.text, lineHeight: 20, marginBottom: 3 },
+  infoBox: { backgroundColor: Colors.warningBg, padding: 12, borderRadius: 10, marginTop: 8 },
+  info: { fontSize: 13, color: Colors.text, lineHeight: 18 },
 });
