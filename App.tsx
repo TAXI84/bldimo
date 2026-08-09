@@ -24,19 +24,23 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <StatusBar barStyle="light-content" backgroundColor="#111" />
       
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={styles.headerTitle}>bldimo</Text>
-          <Text style={styles.headerFlag}>🇲🇦</Text>
+      <TouchableOpacity style={styles.adHeader} activeOpacity={0.9}>
+        <View style={styles.adContent}>
+          <View style={styles.adLeft}>
+            <Text style={styles.adBrand}>ADIDAS</Text>
+            <Text style={styles.adTitle}>Nouvelle collection</Text>
+            <Text style={styles.adSub}>Découvre les dernières sorties</Text>
+          </View>
+          <View style={styles.adBtn}>
+            <Text style={styles.adBtnText}>VOIR</Text>
+          </View>
         </View>
-        <Text style={styles.headerSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
-      </View>
-      
+        <Text style={styles.adLabel}>Publicité</Text>
+      </TouchableOpacity>
+
       <ZelligeAccent />
-      <View style={styles.zelligeLine2} />
-      <View style={styles.zelligeLine3} />
 
       <View style={styles.content}>
         {renderScreen()}
@@ -64,38 +68,52 @@ function TabButton({ label, icon, active, onPress }: { label: string; icon: any;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { 
-    backgroundColor: Colors.primary, 
+  adHeader: {
+    backgroundColor: '#111',
     paddingTop: Platform.OS === 'android' ? 36 : 46,
-    paddingBottom: 12, 
-    paddingHorizontal: 20,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
   },
-  headerTop: {
+  adContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  headerTitle: { 
-    color: '#fff', 
-    fontSize: 22, 
-    fontWeight: '800', 
-    letterSpacing: 1,
+  adLeft: { flex: 1 },
+  adBrand: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 2,
   },
-  headerFlag: {
-    fontSize: 26,
-  },
-  headerSubtitle: { 
-    color: 'rgba(255,255,255,0.85)', 
-    fontSize: 12, 
+  adTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
     marginTop: 2,
   },
-  zelligeLine2: {
-    height: 4,
-    backgroundColor: Colors.secondary,
+  adSub: {
+    color: '#aaa',
+    fontSize: 12,
+    marginTop: 1,
   },
-  zelligeLine3: {
-    height: 2,
-    backgroundColor: Colors.primaryDark,
+  adBtn: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  adBtnText: {
+    color: '#111',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  adLabel: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 38 : 48,
+    right: 12,
+    color: '#555',
+    fontSize: 9,
+    fontWeight: '600',
   },
   content: { flex: 1 },
   tabBar: {
