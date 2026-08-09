@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MarocainScreen from './app/index';
 import MREScreen from './app/mre';
@@ -23,7 +23,7 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       
       <View style={styles.header}>
@@ -43,7 +43,7 @@ export default function App() {
         <TabButton label="Étranger" icon="globe" active={activeTab === 'etranger'} onPress={() => setActiveTab('etranger')} />
         <TabButton label="Documents" icon="document-text" active={activeTab === 'documents'} onPress={() => setActiveTab('documents')} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { 
     backgroundColor: Colors.primary, 
-    paddingTop: Platform.OS === 'android' ? 12 : 8,
+    paddingTop: Platform.OS === 'android' ? 40 : 50,
     paddingBottom: 14, 
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -83,13 +83,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 6,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
     paddingTop: 8,
     elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
   },
   tabButton: { 
     flex: 1, 
