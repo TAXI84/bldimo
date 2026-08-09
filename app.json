@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "bldimo",
+    "slug": "bldimo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "bldimo",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#005C9E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ma.bldimo.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#005C9E"
+      },
+      "package": "ma.bldimo.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
