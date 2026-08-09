@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Linking,
   NativeSyntheticEvent, NativeScrollEvent, Modal, Pressable, PanResponder, LayoutChangeEvent,
@@ -16,7 +16,6 @@ const PRICE_MAX = 700000;
 const PRICE_STEP = 1000;
 
 type TypeFilter = 'all' | 'appartement' | 'maison' | 'villa';
-
 interface Props { onSimulate?: () => void; }
 
 function snapPrice(v: number) {
@@ -33,7 +32,9 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   const [cityOpen, setCityOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
-  const trackWidth = useRef(SCREEN_W - 80);
+  const trackRef = useRef<View>(null);
+  const trackWidth = useRef(Math.max(1, SCREEN_W - 80));
+  const trackPageX = useRef(0);
 
   const cities = useMemo(() => {
     const list: string[] = [];
@@ -42,58 +43,78 @@ export default function ProjetsScreen({ onSimulate }: Props) {
     return list;
   }, []);
 
-  const filtered = useMemo(() => {
-    return SAMPLE_PROJECTS.filter((p) => {
-      if (city !== 'all' && p.city !== city) return false;
-      if (type !== 'all' && p.type !== type) return false;
-      const max = p.priceMax != null ? p.priceMax : 700000;
-      if (max > maxPrice) return false;
-      return true;
-    });
-  }, [city, type, maxPrice]);
+  const filtered = useMemo(() => SAMPLE_PROJECTS.filter((p) => {
+    if (city !== 'all' && p.city !== city) return false;
+    if (type !== 'all' && p.type !== type) return false;
+    const max = p.priceMax != null ? p.priceMax : 700000;
+    return max <= maxPrice;
+  }), [city, type, maxPrice]);
 
   const ratio = (maxPrice - PRICE_MIN) / (PRICE_MAX - PRICE_MIN);
 
-  const priceFromX = (x: number) => {
-    const w = trackWidth.current || 1;
-    const r = Math.min(1, Math.max(0, x / w));
-    return snapPrice(PRICE_MIN + r * (PRICE_MAX - PRICE_MIN));
-  };
+  const applyPageX = useCallback((pageX: number) => {
+    const w = Math.max(1, trackWidth.current);
+    const local = pageX - trackPageX.current;
+    const r = Math.min(1, Math.max(0, local / w));
+    setMaxPrice(snapPrice(PRICE_MIN + r * (PRICE_MAX - PRICE_MIN)));
+  }, []);
+
+  const measureTrack = useCallback(() => {
+    const node = trackRef.current as any;
+    if (node && typeof node.measureInWindow === 'function') {
+      node.measureInWindow((x: number, _y: number, width: number) => {
+        if (typeof x === 'number') trackPageX.current = x;
+        if (width > 0) trackWidth.current = width;
+      });
+    }
+  }, []);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
       onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
       onPanResponderGrant: (evt) => {
-        setDragging(true);
-        setMaxPrice(priceFromX(evt.nativeEvent.locationX));
+        try {
+          measureTrack();
+          setDragging(true);
+          if (typeof evt.nativeEvent.pageX === 'number') applyPageX(evt.nativeEvent.pageX);
+        } catch { setDragging(true); }
       },
       onPanResponderMove: (evt) => {
-        setMaxPrice(priceFromX(evt.nativeEvent.locationX));
+        try {
+          if (typeof evt.nativeEvent.pageX === 'number') applyPageX(evt.nativeEvent.pageX);
+        } catch { /* ignore */ }
       },
       onPanResponderRelease: () => {
         setDragging(false);
         setIndex(0);
-        scrollRef.current?.scrollTo({ x: 0, animated: false });
+        try { scrollRef.current?.scrollTo({ x: 0, animated: false }); } catch { /* ignore */ }
       },
       onPanResponderTerminate: () => setDragging(false),
     })
   ).current;
 
   const onTrackLayout = (e: LayoutChangeEvent) => {
-    trackWidth.current = e.nativeEvent.layout.width;
+    try {
+      const w = e.nativeEvent.layout.width;
+      if (w > 0) trackWidth.current = w;
+      measureTrack();
+    } catch { /* ignore */ }
   };
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
-    const step = CARD_WIDTH + CARD_MARGIN * 2;
-    const i = Math.round(x / step);
+    const i = Math.round(x / (CARD_WIDTH + CARD_MARGIN * 2));
     if (i >= 0 && i < filtered.length) setIndex(i);
   };
 
   const resetScroll = () => {
     setIndex(0);
-    scrollRef.current?.scrollTo({ x: 0, animated: false });
+    try { scrollRef.current?.scrollTo({ x: 0, animated: false }); } catch { /* ignore */ }
   };
 
   const openAlOmrane = (project: Project) => {
@@ -108,6 +129,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   };
 
   const cityLabel = city === 'all' ? 'Ville' : city;
+  const bubbleLeft = 20 + ratio * Math.max(40, trackWidth.current - 40);
 
   return (
     <View style={styles.container}>
@@ -123,36 +145,34 @@ export default function ProjetsScreen({ onSimulate }: Props) {
           <Text style={styles.dropText}>{typeLabel(type)}</Text>
           <Ionicons name="chevron-down" size={14} color={Colors.textLight} />
         </TouchableOpacity>
-        <View style={styles.priceHint}>
-          <Text style={styles.priceHintText}>Prix max</Text>
-        </View>
+        <View style={styles.priceHint}><Text style={styles.priceHintText}>Prix max</Text></View>
       </View>
 
       <View style={styles.sliderBlock}>
-        {dragging && (
-          <View style={[styles.bubble, { left: 24 + ratio * Math.max(0, trackWidth.current - 20) }]}>
+        {dragging ? (
+          <View style={[styles.bubble, { left: bubbleLeft }]}>
             <Text style={styles.bubbleText}>{maxPrice.toLocaleString('fr-MA')} DH</Text>
             <View style={styles.bubbleArrow} />
           </View>
-        )}
+        ) : null}
 
         <View style={styles.sliderRow}>
           <Text style={styles.sliderHint}>25k</Text>
-          <View style={styles.sliderTrack} onLayout={onTrackLayout} {...panResponder.panHandlers}>
+          <View ref={trackRef} style={styles.sliderTrack} onLayout={onTrackLayout} {...panResponder.panHandlers}>
             <View style={styles.sliderTrackBg} />
             <View style={[styles.sliderFill, { width: `${ratio * 100}%` as any }]} />
             <View style={[
               styles.sliderThumb,
-              { left: `${Math.min(98, Math.max(0, ratio * 100))}%` as any },
-              dragging && styles.sliderThumbActive,
+              { left: `${Math.min(97, Math.max(3, ratio * 100))}%` as any },
+              dragging ? styles.sliderThumbActive : null,
             ]} />
           </View>
           <Text style={styles.sliderHint}>700k</Text>
         </View>
 
-        {!dragging && (
+        {!dragging ? (
           <Text style={styles.priceCaption}>{maxPrice.toLocaleString('fr-MA')} DH</Text>
-        )}
+        ) : <View style={{ height: 18 }} />}
       </View>
 
       <AdBanner />
@@ -166,16 +186,9 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         </View>
       ) : (
         <>
-          <ScrollView
-            ref={scrollRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
-            decelerationRate="fast"
-            contentContainerStyle={styles.scrollContent}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-          >
+          <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2} decelerationRate="fast"
+            contentContainerStyle={styles.scrollContent} onScroll={onScroll} scrollEventThrottle={16}>
             {filtered.map((project) => (
               <View key={project.id} style={styles.cardWrap}>
                 <TouchableOpacity style={styles.card} activeOpacity={0.95} onPress={() => openAlOmrane(project)}>
@@ -188,12 +201,12 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                     <Text style={styles.cityText}>{project.city}</Text>
                     <Text style={styles.cardTitle} numberOfLines={2}>{project.title}</Text>
                     <Text style={styles.desc} numberOfLines={2}>{project.description}</Text>
-                    {project.priceMax != null && (
+                    {project.priceMax != null ? (
                       <Text style={styles.priceMax}>Jusqu’à {project.priceMax.toLocaleString('fr-MA')} DH</Text>
-                    )}
+                    ) : null}
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.simButton} activeOpacity={0.85} onPress={() => onSimulate?.()}>
+                <TouchableOpacity style={styles.simButton} activeOpacity={0.85} onPress={() => onSimulate && onSimulate()}>
                   <Ionicons name="calculator-outline" size={20} color="#fff" />
                   <Text style={styles.simButtonText}>Simulation</Text>
                 </TouchableOpacity>
@@ -214,7 +227,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
               </TouchableOpacity>
               {cities.map((c) => (
                 <TouchableOpacity key={c} style={styles.modalItem} onPress={() => { setCity(c); setCityOpen(false); resetScroll(); }}>
-                  <Text style={[styles.modalItemText, city === c && styles.modalItemActive]}>{c}</Text>
+                  <Text style={[styles.modalItemText, city === c ? styles.modalItemActive : null]}>{c}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -228,7 +241,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
             <Text style={styles.modalTitle}>Type de bien</Text>
             {([['all', 'Tous'], ['appartement', 'Appartement'], ['maison', 'Maison'], ['villa', 'Villa']] as const).map(([v, label]) => (
               <TouchableOpacity key={v} style={styles.modalItem} onPress={() => { setType(v); setTypeOpen(false); resetScroll(); }}>
-                <Text style={[styles.modalItemText, type === v && styles.modalItemActive]}>{label}</Text>
+                <Text style={[styles.modalItemText, type === v ? styles.modalItemActive : null]}>{label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -243,35 +256,22 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '800', color: Colors.primary, paddingHorizontal: 16 },
   subtitle: { fontSize: 12, color: Colors.textLight, paddingHorizontal: 16, marginBottom: 8, marginTop: 2 },
   filterLine: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, gap: 8, marginBottom: 4 },
-  dropBtn: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20,
-    paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border, maxWidth: 120, gap: 4,
-  },
+  dropBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border, maxWidth: 120, gap: 4 },
   dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 90 },
   priceHint: { flex: 1, alignItems: 'flex-end', paddingRight: 4 },
   priceHintText: { fontSize: 12, color: Colors.textLight, fontWeight: '600' },
-  sliderBlock: { paddingHorizontal: 8, marginBottom: 4, minHeight: 56, justifyContent: 'flex-end' },
-  bubble: {
-    position: 'absolute', top: 0, marginLeft: -48, backgroundColor: Colors.primary,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, zIndex: 10, minWidth: 100, alignItems: 'center',
-  },
+  sliderBlock: { paddingHorizontal: 8, marginBottom: 4, minHeight: 58, justifyContent: 'flex-end' },
+  bubble: { position: 'absolute', top: 0, marginLeft: -50, backgroundColor: Colors.primary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, zIndex: 20, minWidth: 100, alignItems: 'center' },
   bubbleText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  bubbleArrow: {
-    position: 'absolute', bottom: -6, width: 0, height: 0,
-    borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 6,
-    borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: Colors.primary,
-  },
+  bubbleArrow: { position: 'absolute', bottom: -6, width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 6, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: Colors.primary },
   sliderRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, gap: 8, marginTop: 30 },
   sliderHint: { fontSize: 10, color: Colors.textMuted, width: 28 },
-  sliderTrack: { flex: 1, height: 36, justifyContent: 'center' },
+  sliderTrack: { flex: 1, height: 40, justifyContent: 'center' },
   sliderTrackBg: { position: 'absolute', left: 0, right: 0, height: 8, borderRadius: 4, backgroundColor: Colors.border },
   sliderFill: { position: 'absolute', left: 0, height: 8, borderRadius: 4, backgroundColor: Colors.secondary },
-  sliderThumb: {
-    position: 'absolute', width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.primary,
-    marginLeft: -14, top: 4, elevation: 5, borderWidth: 3, borderColor: '#fff',
-  },
+  sliderThumb: { position: 'absolute', width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.primary, marginLeft: -14, top: 6, elevation: 6, borderWidth: 3, borderColor: '#fff' },
   sliderThumbActive: { transform: [{ scale: 1.2 }], backgroundColor: Colors.secondary },
-  priceCaption: { fontSize: 13, color: Colors.text, fontWeight: '700', textAlign: 'center', marginTop: 4, marginBottom: 2 },
+  priceCaption: { fontSize: 13, color: Colors.text, fontWeight: '700', textAlign: 'center', marginTop: 2, marginBottom: 2 },
   scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: { backgroundColor: Colors.card, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, elevation: 3 },
