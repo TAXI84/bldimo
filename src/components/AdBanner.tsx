@@ -1,13 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors } from '../constants/theme';
 
-interface Props {
-  position?: 'top' | 'bottom';
-}
-
-export default function AdBanner({ position = 'bottom' }: Props) {
+export default function AdBanner() {
   return (
-    <TouchableOpacity style={[styles.banner, position === 'top' && styles.bannerTop]} activeOpacity={0.9}>
+    <TouchableOpacity style={styles.banner} activeOpacity={0.9}>
       <View style={styles.adContent}>
         <View style={styles.adLeft}>
           <Text style={styles.adBrand}>ADIDAS</Text>
@@ -32,10 +27,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#333',
-  },
-  bannerTop: {
-    marginTop: 8,
-    marginBottom: 4,
   },
   adContent: {
     flexDirection: 'row',
