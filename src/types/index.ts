@@ -2,20 +2,31 @@ export type ProfileType = 'marocain' | 'mre' | 'etranger_resident' | 'etranger_i
 
 export type PropertyType = 'appartement' | 'villa' | 'maison' | 'terrain' | 'duplex' | 'studio';
 
+export type ProfessionType = 
+  | 'salarie_public' 
+  | 'salarie_prive' 
+  | 'independant' 
+  | 'commercant' 
+  | 'liberal' 
+  | 'revenu_irregulier' 
+  | 'sans_activite'
+  | 'autre';
+
+export type FinancingType = 'credit' | 'cash' | 'mixte';
+
 export interface SimulationInput {
   profile: ProfileType;
   propertyType: PropertyType;
   priceTTC: number;
-  surface?: number;
   rooms: number;
   city?: string;
   monthlyIncome?: number;
   isOwnerInMorocco: boolean;
   hasReceivedStateAid: boolean;
   isPrincipalResidence: boolean;
-  ageRange?: string;
-  familyStatus?: string;
-  children?: number;
+  profession?: ProfessionType;
+  financingType?: FinancingType;
+  age?: number;
 }
 
 export interface ConditionResult {
@@ -26,12 +37,15 @@ export interface ConditionResult {
 }
 
 export interface DeviceResult {
+  id: string;
   name: string;
+  shortName: string;
   eligible: boolean;
   amount?: number;
   advantages: string[];
   conditions: ConditionResult[];
   refusalReasons: string[];
+  documents: string[];
 }
 
 export interface SimulationResult {
