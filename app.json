@@ -4,11 +4,8 @@
     "slug": "bldimo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "scheme": "bldimo",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#005C9E"
     },
@@ -17,15 +14,10 @@
       "bundleIdentifier": "ma.bldimo.app"
     },
     "android": {
+      "package": "ma.bldimo.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#005C9E"
-      },
-      "package": "ma.bldimo.app"
-    },
-    "web": {
-      "bundler": "metro",
-      "favicon": "./assets/favicon.png"
+      }
     }
   }
 }
