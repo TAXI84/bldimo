@@ -27,12 +27,16 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>bldimo</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>bldimo</Text>
+          <Text style={styles.headerFlag}>🇲🇦</Text>
+        </View>
         <Text style={styles.headerSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
       </View>
       
       <ZelligeAccent />
       <View style={styles.zelligeLine2} />
+      <View style={styles.zelligeLine3} />
 
       <View style={styles.content}>
         {renderScreen()}
@@ -65,7 +69,11 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 36 : 46,
     paddingBottom: 12, 
     paddingHorizontal: 20,
-    alignItems: 'flex-start',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerTitle: { 
     color: '#fff', 
@@ -73,15 +81,21 @@ const styles = StyleSheet.create({
     fontWeight: '800', 
     letterSpacing: 1,
   },
+  headerFlag: {
+    fontSize: 26,
+  },
   headerSubtitle: { 
     color: 'rgba(255,255,255,0.85)', 
     fontSize: 12, 
     marginTop: 2,
   },
   zelligeLine2: {
-    height: 3,
+    height: 4,
     backgroundColor: Colors.secondary,
-    opacity: 0.7,
+  },
+  zelligeLine3: {
+    height: 2,
+    backgroundColor: Colors.primaryDark,
   },
   content: { flex: 1 },
   tabBar: {
