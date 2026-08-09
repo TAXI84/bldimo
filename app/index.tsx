@@ -33,8 +33,8 @@ export default function MarocainScreen() {
       <View style={styles.titleRow}>
         <Text style={styles.flag}>🇲🇦</Text>
         <View>
-          <Text style={styles.title}>Simulateur Marocain</Text>
-          <Text style={styles.subtitle}>Daam Sakane • Aide au logement</Text>
+          <Text style={styles.title}>Aide au logement – Marocain</Text>
+          <Text style={styles.subtitle}>Aides officielles de l'État</Text>
         </View>
       </View>
 
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   titleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 10 },
   flag: { fontSize: 32 },
-  title: { fontSize: 22, fontWeight: '800', color: Colors.primary },
+  title: { fontSize: 20, fontWeight: '800', color: Colors.primary },
   subtitle: { fontSize: 13, color: Colors.textLight, marginTop: 2 },
   card: { 
     backgroundColor: Colors.card, 
