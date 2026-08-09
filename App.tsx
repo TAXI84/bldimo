@@ -32,13 +32,14 @@ export default function App() {
       </View>
       
       <ZelligeAccent />
+      <View style={styles.zelligeLine2} />
 
       <View style={styles.content}>
         {renderScreen()}
       </View>
 
       <View style={styles.tabBar}>
-        <TabButton label="Marocain" icon="home" active={activeTab === 'marocain'} onPress={() => setActiveTab('marocain')} />
+        <TabButton label="Marocain" icon="map" active={activeTab === 'marocain'} onPress={() => setActiveTab('marocain')} />
         <TabButton label="MRE" icon="airplane" active={activeTab === 'mre'} onPress={() => setActiveTab('mre')} />
         <TabButton label="Étranger" icon="globe" active={activeTab === 'etranger'} onPress={() => setActiveTab('etranger')} />
         <TabButton label="Documents" icon="document-text" active={activeTab === 'documents'} onPress={() => setActiveTab('documents')} />
@@ -61,10 +62,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { 
     backgroundColor: Colors.primary, 
-    paddingTop: Platform.OS === 'android' ? 40 : 50,
-    paddingBottom: 14, 
-    paddingHorizontal: 16,
-    alignItems: 'center',
+    paddingTop: Platform.OS === 'android' ? 38 : 48,
+    paddingBottom: 12, 
+    paddingHorizontal: 20,
+    alignItems: 'flex-start',
   },
   headerTitle: { 
     color: '#fff', 
@@ -73,9 +74,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerSubtitle: { 
-    color: 'rgba(255,255,255,0.88)', 
+    color: 'rgba(255,255,255,0.85)', 
     fontSize: 12, 
-    marginTop: 3,
+    marginTop: 2,
+  },
+  zelligeLine2: {
+    height: 3,
+    backgroundColor: Colors.secondary,
+    opacity: 0.7,
   },
   content: { flex: 1 },
   tabBar: {
@@ -83,9 +89,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-    paddingTop: 8,
-    elevation: 12,
+    paddingBottom: Platform.OS === 'android' ? 28 : 24,
+    paddingTop: 10,
+    elevation: 16,
   },
   tabButton: { 
     flex: 1, 
@@ -105,8 +111,8 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: -6,
-    width: 20,
+    bottom: -4,
+    width: 22,
     height: 3,
     borderRadius: 2,
     backgroundColor: Colors.secondary,
