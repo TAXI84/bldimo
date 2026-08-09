@@ -46,14 +46,18 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Projets éligibles</Text>
-      <Text style={styles.subtitle}>
-        ≤ 700 000 DH • Habitat uniquement • Source Al Omrane
-      </Text>
+      <Text style={styles.subtitle}>≤ 700 000 DH • Source Al Omrane</Text>
+      <View style={styles.typesRow}>
+        <Text style={styles.typeTag}>✓ Appartement</Text>
+        <Text style={styles.typeTag}>✓ Maison</Text>
+        <Text style={styles.typeTag}>✓ Villa</Text>
+        <Text style={[styles.typeTag, styles.typeTagNo]}>✗ Commerce</Text>
+        <Text style={[styles.typeTag, styles.typeTagNo]}>✗ Terrain</Text>
+      </View>
 
       <ScrollView
         ref={scrollRef}
         horizontal
-        pagingEnabled={false}
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
         decelerationRate="fast"
@@ -73,7 +77,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{typeLabel(project.type)}</Text>
                 </View>
-                <Text style={styles.tapHint}>Voir sur Al Omrane →</Text>
+                <Text style={styles.tapHint}>Fiche Al Omrane →</Text>
               </View>
 
               <View style={styles.body}>
@@ -122,7 +126,25 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, paddingTop: 12 },
   title: { fontSize: 22, fontWeight: '800', color: Colors.primary, paddingHorizontal: 20 },
-  subtitle: { fontSize: 13, color: Colors.textLight, paddingHorizontal: 20, marginBottom: 16, marginTop: 4 },
+  subtitle: { fontSize: 13, color: Colors.textLight, paddingHorizontal: 20, marginTop: 4 },
+  typesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 20,
+    marginBottom: 14,
+    marginTop: 10,
+  },
+  typeTag: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.secondary,
+    backgroundColor: Colors.successBg,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  typeTagNo: { color: Colors.danger, backgroundColor: Colors.dangerBg },
   scrollContent: { paddingHorizontal: 12 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
