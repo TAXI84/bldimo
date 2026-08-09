@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -19,18 +19,46 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
 const CARD_MARGIN = 12;
 
+type TypeFilter = 'all' | Project['type'];
+type PriceFilter = 'all' | 'under300' | '300to500' | '500to700';
+
 interface Props {
   onSimulate?: () => void;
 }
 
 export default function ProjetsScreen({ onSimulate }: Props) {
   const [index, setIndex] = useState(0);
+  const [city, setCity] = useState<string>('all');
+  const [type, setType] = useState<TypeFilter>('all');
+  const [price, setPrice] = useState<PriceFilter>('all');
   const scrollRef = useRef<ScrollView>(null);
+
+  const cities = useMemo(() => {
+    const set = new Set(SAMPLE_PROJECTS.map((p) => p.city));
+    return ['all', ...Array.from(set).sort()];
+  }, []);
+
+  const filtered = useMemo(() => {
+    return SAMPLE_PROJECTS.filter((p) => {
+      if (city !== 'all' && p.city !== city) return false;
+      if (type !== 'all' && p.type !== type) return false;
+      const max = p.priceMax ?? 700000;
+      if (price === 'under300' && max > 300000) return false;
+      if (price === '300to500' && (max <= 300000 || max > 500000)) return false;
+      if (price === '500to700' && max <= 500000) return false;
+      return true;
+    });
+  }, [city, type, price]);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
     const i = Math.round(x / (CARD_WIDTH + CARD_MARGIN * 2));
-    if (i >= 0 && i < SAMPLE_PROJECTS.length) setIndex(i);
+    if (i >= 0 && i < filtered.length) setIndex(i);
+  };
+
+  const resetScroll = () => {
+    setIndex(0);
+    scrollRef.current?.scrollTo({ x: 0, animated: true });
   };
 
   const openAlOmrane = (project: Project) => {
@@ -46,77 +74,141 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Projets éligibles</Text>
-      <Text style={styles.subtitle}>≤ 700 000 DH • Source Al Omrane</Text>
-      <View style={styles.typesRow}>
-        <Text style={styles.typeTag}>✓ Appartement</Text>
-        <Text style={styles.typeTag}>✓ Maison</Text>
-        <Text style={styles.typeTag}>✓ Villa</Text>
-        <Text style={[styles.typeTag, styles.typeTagNo]}>✗ Commerce</Text>
-        <Text style={[styles.typeTag, styles.typeTagNo]}>✗ Terrain</Text>
-      </View>
+      <Text style={styles.subtitle}>≤ 700 000 DH • Habitat • Al Omrane</Text>
 
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
-        decelerationRate="fast"
-        contentContainerStyle={styles.scrollContent}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-      >
-        {SAMPLE_PROJECTS.map((project) => (
-          <View key={project.id} style={styles.cardWrap}>
-            <TouchableOpacity
-              style={styles.card}
-              activeOpacity={0.95}
-              onPress={() => openAlOmrane(project)}
-            >
-              <View style={[styles.imageArea, { backgroundColor: project.imageColor }]}>
-                <Ionicons name="home" size={48} color="rgba(255,255,255,0.9)" />
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{typeLabel(project.type)}</Text>
-                </View>
-                <Text style={styles.tapHint}>Fiche Al Omrane →</Text>
-              </View>
-
-              <View style={styles.body}>
-                <Text style={styles.city}>{project.city}</Text>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {project.title}
-                </Text>
-                <Text style={styles.desc} numberOfLines={3}>
-                  {project.description}
-                </Text>
-                {project.priceMax != null && (
-                  <Text style={styles.price}>
-                    Jusqu’à {project.priceMax.toLocaleString('fr-MA')} DH
-                  </Text>
-                )}
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.simButton}
-              activeOpacity={0.85}
-              onPress={() => onSimulate?.()}
-            >
-              <Ionicons name="calculator-outline" size={20} color="#fff" />
-              <Text style={styles.simButtonText}>Simulation</Text>
-            </TouchableOpacity>
-          </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow} contentContainerStyle={styles.filtersContent}>
+        <Text style={styles.filterLabel}>Ville</Text>
+        {cities.map((c) => (
+          <TouchableOpacity
+            key={c}
+            style={[styles.chip, city === c && styles.chipActive]}
+            onPress={() => {
+              setCity(c);
+              resetScroll();
+            }}
+          >
+            <Text style={[styles.chipText, city === c && styles.chipTextActive]}>
+              {c === 'all' ? 'Toutes' : c}
+            </Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
-      <View style={styles.dots}>
-        {SAMPLE_PROJECTS.map((_, i) => (
-          <View key={i} style={[styles.dot, i === index && styles.dotActive]} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow} contentContainerStyle={styles.filtersContent}>
+        <Text style={styles.filterLabel}>Type</Text>
+        {(
+          [
+            ['all', 'Tous'],
+            ['appartement', 'Appart.'],
+            ['maison', 'Maison'],
+            ['villa', 'Villa'],
+          ] as const
+        ).map(([value, label]) => (
+          <TouchableOpacity
+            key={value}
+            style={[styles.chip, type === value && styles.chipActive]}
+            onPress={() => {
+              setType(value);
+              resetScroll();
+            }}
+          >
+            <Text style={[styles.chipText, type === value && styles.chipTextActive]}>{label}</Text>
+          </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      <Text style={styles.counter}>
-        {index + 1} / {SAMPLE_PROJECTS.length}
-      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow} contentContainerStyle={styles.filtersContent}>
+        <Text style={styles.filterLabel}>Prix</Text>
+        {(
+          [
+            ['all', 'Tous'],
+            ['under300', '≤ 300k'],
+            ['300to500', '300–500k'],
+            ['500to700', '500–700k'],
+          ] as const
+        ).map(([value, label]) => (
+          <TouchableOpacity
+            key={value}
+            style={[styles.chip, price === value && styles.chipActive]}
+            onPress={() => {
+              setPrice(value);
+              resetScroll();
+            }}
+          >
+            <Text style={[styles.chipText, price === value && styles.chipTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {filtered.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Aucun projet avec ces filtres</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setCity('all');
+              setType('all');
+              setPrice('all');
+              resetScroll();
+            }}
+          >
+            <Text style={styles.resetLink}>Réinitialiser</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
+            decelerationRate="fast"
+            contentContainerStyle={styles.scrollContent}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          >
+            {filtered.map((project) => (
+              <View key={project.id} style={styles.cardWrap}>
+                <TouchableOpacity style={styles.card} activeOpacity={0.95} onPress={() => openAlOmrane(project)}>
+                  <View style={[styles.imageArea, { backgroundColor: project.imageColor }]}>
+                    <Ionicons name="home" size={48} color="rgba(255,255,255,0.9)" />
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{typeLabel(project.type)}</Text>
+                    </View>
+                    <Text style={styles.tapHint}>Voir sur Al Omrane →</Text>
+                  </View>
+                  <View style={styles.body}>
+                    <Text style={styles.city}>{project.city}</Text>
+                    <Text style={styles.cardTitle} numberOfLines={2}>
+                      {project.title}
+                    </Text>
+                    <Text style={styles.desc} numberOfLines={2}>
+                      {project.description}
+                    </Text>
+                    {project.priceMax != null && (
+                      <Text style={styles.priceMax}>
+                        Jusqu’à {project.priceMax.toLocaleString('fr-MA')} DH
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.simButton} activeOpacity={0.85} onPress={() => onSimulate?.()}>
+                  <Ionicons name="calculator-outline" size={20} color="#fff" />
+                  <Text style={styles.simButtonText}>Simulation</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+
+          <View style={styles.dots}>
+            {filtered.map((_, i) => (
+              <View key={i} style={[styles.dot, i === index && styles.dotActive]} />
+            ))}
+          </View>
+          <Text style={styles.counter}>
+            {Math.min(index + 1, filtered.length)} / {filtered.length}
+          </Text>
+        </>
+      )}
 
       <AdBanner />
     </View>
@@ -124,28 +216,24 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, paddingTop: 12 },
+  container: { flex: 1, backgroundColor: Colors.background, paddingTop: 8 },
   title: { fontSize: 22, fontWeight: '800', color: Colors.primary, paddingHorizontal: 20 },
-  subtitle: { fontSize: 13, color: Colors.textLight, paddingHorizontal: 20, marginTop: 4 },
-  typesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    paddingHorizontal: 20,
-    marginBottom: 14,
-    marginTop: 10,
+  subtitle: { fontSize: 12, color: Colors.textLight, paddingHorizontal: 20, marginBottom: 8, marginTop: 2 },
+  filtersRow: { maxHeight: 40, marginBottom: 6 },
+  filtersContent: { paddingHorizontal: 16, alignItems: 'center', gap: 6 },
+  filterLabel: { fontSize: 12, fontWeight: '700', color: Colors.textLight, marginRight: 4 },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  typeTag: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.secondary,
-    backgroundColor: Colors.successBg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  typeTagNo: { color: Colors.danger, backgroundColor: Colors.dangerBg },
-  scrollContent: { paddingHorizontal: 12 },
+  chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  chipText: { fontSize: 12, color: Colors.text, fontWeight: '500' },
+  chipTextActive: { color: '#fff', fontWeight: '700' },
+  scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
     backgroundColor: Colors.card,
@@ -155,11 +243,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     elevation: 4,
   },
-  imageArea: { height: 160, alignItems: 'center', justifyContent: 'center' },
+  imageArea: { height: 140, alignItems: 'center', justifyContent: 'center' },
   badge: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 10,
+    left: 10,
     backgroundColor: 'rgba(0,0,0,0.35)',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -168,19 +256,19 @@ const styles = StyleSheet.create({
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   tapHint: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 8,
     right: 12,
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
-  body: { padding: 16 },
+  body: { padding: 14 },
   city: { fontSize: 13, color: Colors.secondary, fontWeight: '700', marginBottom: 4 },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: Colors.text, marginBottom: 8 },
-  desc: { fontSize: 13, color: Colors.textLight, lineHeight: 19 },
-  price: { marginTop: 10, fontSize: 14, fontWeight: '700', color: Colors.primary },
+  cardTitle: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 6 },
+  desc: { fontSize: 13, color: Colors.textLight, lineHeight: 18 },
+  priceMax: { marginTop: 8, fontSize: 14, fontWeight: '700', color: Colors.primary },
   simButton: {
-    marginTop: 12,
+    marginTop: 10,
     backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
@@ -190,8 +278,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   simButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  dots: { flexDirection: 'row', justifyContent: 'center', marginTop: 14, gap: 6 },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: Colors.border },
-  dotActive: { backgroundColor: Colors.secondary, width: 18 },
-  counter: { textAlign: 'center', marginTop: 8, fontSize: 12, color: Colors.textMuted },
+  dots: { flexDirection: 'row', justifyContent: 'center', marginTop: 10, gap: 5, flexWrap: 'wrap', paddingHorizontal: 20 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.border },
+  dotActive: { backgroundColor: Colors.secondary, width: 16 },
+  counter: { textAlign: 'center', marginTop: 6, fontSize: 12, color: Colors.textMuted },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  emptyText: { fontSize: 15, color: Colors.textLight, marginBottom: 12 },
+  resetLink: { fontSize: 15, color: Colors.primary, fontWeight: '700' },
 });
