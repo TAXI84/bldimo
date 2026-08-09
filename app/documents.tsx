@@ -33,7 +33,10 @@ export default function DocumentsScreen() {
 
   const renderList = (title: string, docs: string[]) => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionHeader}>
+        <View style={styles.accentBar} />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
       {docs.map((doc, i) => (
         <TouchableOpacity key={i} style={styles.docRow} onPress={() => toggle(doc)} activeOpacity={0.7}>
           <View style={[styles.checkbox, checked[doc] && styles.checkboxChecked]}>
@@ -46,14 +49,14 @@ export default function DocumentsScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingBottom: 50 }}>
       <Text style={styles.title}>Documents & Checklist</Text>
-      <Text style={styles.subtitle}>Cochez les documents que vous avez déjà préparés</Text>
+      <Text style={styles.subtitle}>Cochez les documents déjà préparés</Text>
 
-      {renderList('Pour la demande d\'aide Daam Sakane', DOCUMENTS_DAAM)}
+      {renderList('Demande d\'aide Daam Sakane', DOCUMENTS_DAAM)}
       {renderList('Spécifique MRE', DOCUMENTS_MRE)}
       {renderList('Spécifique Étranger résident', DOCUMENTS_ETRANGER)}
-      {renderList('Documents Achat-Vente (toujours nécessaires)', DOCUMENTS_ACHAT)}
+      {renderList('Documents Achat-Vente', DOCUMENTS_ACHAT)}
 
       <View style={styles.infoBox}>
         <Text style={styles.infoTitle}>Sources officielles</Text>
@@ -64,7 +67,7 @@ export default function DocumentsScreen() {
       </View>
 
       <Text style={styles.note}>
-        Cette checklist est indicative. Vérifiez toujours les exigences à jour sur la plateforme officielle Daam Sakane.
+        Checklist indicative. Vérifiez toujours les exigences à jour sur daamsakane.ma
       </Text>
     </ScrollView>
   );
@@ -72,18 +75,34 @@ export default function DocumentsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  title: { fontSize: 22, fontWeight: 'bold', color: Colors.primary, marginBottom: 4 },
-  subtitle: { fontSize: 14, color: Colors.textLight, marginBottom: 16 },
-  section: { backgroundColor: Colors.card, borderRadius: 12, padding: 16, marginBottom: 12, elevation: 1 },
-  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: Colors.primary, marginBottom: 12 },
+  title: { fontSize: 24, fontWeight: '800', color: Colors.primary, marginBottom: 4 },
+  subtitle: { fontSize: 14, color: Colors.textLight, marginBottom: 18 },
+  section: { 
+    backgroundColor: Colors.card, 
+    borderRadius: 14, 
+    padding: 16, 
+    marginBottom: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.secondary,
+    elevation: 1,
+  },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  accentBar: { width: 4, height: 16, backgroundColor: Colors.primary, borderRadius: 2, marginRight: 10 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: Colors.primary },
   docRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  checkbox: { width: 24, height: 24, borderWidth: 2, borderColor: Colors.primary, borderRadius: 6, marginRight: 12, alignItems: 'center', justifyContent: 'center' },
-  checkboxChecked: { backgroundColor: Colors.primary },
+  checkbox: { 
+    width: 24, height: 24, borderWidth: 2, borderColor: Colors.primary, 
+    borderRadius: 6, marginRight: 12, alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxChecked: { backgroundColor: Colors.secondary, borderColor: Colors.secondary },
   check: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
   docText: { flex: 1, fontSize: 14, color: Colors.text, lineHeight: 20 },
-  docChecked: { textDecorationLine: 'line-through', color: '#999' },
-  infoBox: { backgroundColor: Colors.infoBg, padding: 16, borderRadius: 12, marginTop: 8 },
-  infoTitle: { fontWeight: 'bold', color: Colors.primary, marginBottom: 8 },
+  docChecked: { textDecorationLine: 'line-through', color: Colors.textMuted },
+  infoBox: { 
+    backgroundColor: Colors.infoBg, padding: 16, borderRadius: 14, marginTop: 6,
+    borderLeftWidth: 4, borderLeftColor: Colors.primary,
+  },
+  infoTitle: { fontWeight: '700', color: Colors.primary, marginBottom: 8 },
   link: { color: Colors.primary, fontSize: 13, marginBottom: 3 },
-  note: { fontSize: 12, color: '#888', marginTop: 16, fontStyle: 'italic', textAlign: 'center', lineHeight: 18 },
+  note: { fontSize: 12, color: Colors.textMuted, marginTop: 18, fontStyle: 'italic', textAlign: 'center', lineHeight: 18 },
 });
