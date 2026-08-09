@@ -19,7 +19,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
 const CARD_MARGIN = 12;
 
-type TypeFilter = 'all' | Project['type'];
+type TypeFilter = 'all' | 'appartement' | 'maison' | 'villa';
 type PriceFilter = 'all' | 'under300' | '300to500' | '500to700';
 
 interface Props {
@@ -28,21 +28,25 @@ interface Props {
 
 export default function ProjetsScreen({ onSimulate }: Props) {
   const [index, setIndex] = useState(0);
-  const [city, setCity] = useState<string>('all');
+  const [city, setCity] = useState('all');
   const [type, setType] = useState<TypeFilter>('all');
   const [price, setPrice] = useState<PriceFilter>('all');
   const scrollRef = useRef<ScrollView>(null);
 
   const cities = useMemo(() => {
-    const set = new Set(SAMPLE_PROJECTS.map((p) => p.city));
-    return ['all', ...Array.from(set).sort()];
+    const list: string[] = [];
+    SAMPLE_PROJECTS.forEach((p) => {
+      if (list.indexOf(p.city) === -1) list.push(p.city);
+    });
+    list.sort();
+    return ['all'].concat(list);
   }, []);
 
   const filtered = useMemo(() => {
     return SAMPLE_PROJECTS.filter((p) => {
       if (city !== 'all' && p.city !== city) return false;
       if (type !== 'all' && p.type !== type) return false;
-      const max = p.priceMax ?? 700000;
+      const max = p.priceMax != null ? p.priceMax : 700000;
       if (price === 'under300' && max > 300000) return false;
       if (price === '300to500' && (max <= 300000 || max > 500000)) return false;
       if (price === '500to700' && max <= 500000) return false;
@@ -52,20 +56,23 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
-    const i = Math.round(x / (CARD_WIDTH + CARD_MARGIN * 2));
+    const step = CARD_WIDTH + CARD_MARGIN * 2;
+    const i = Math.round(x / step);
     if (i >= 0 && i < filtered.length) setIndex(i);
   };
 
   const resetScroll = () => {
     setIndex(0);
-    scrollRef.current?.scrollTo({ x: 0, animated: true });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ x: 0, animated: false });
+    }
   };
 
   const openAlOmrane = (project: Project) => {
-    Linking.openURL(project.url).catch(() => {});
+    Linking.openURL(project.url).catch(() => undefined);
   };
 
-  const typeLabel = (t: Project['type']) => {
+  const typeLabel = (t: string) => {
     if (t === 'appartement') return 'Appartement';
     if (t === 'villa') return 'Villa';
     return 'Maison';
@@ -81,13 +88,13 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         {cities.map((c) => (
           <TouchableOpacity
             key={c}
-            style={[styles.chip, city === c && styles.chipActive]}
+            style={[styles.chip, city === c ? styles.chipActive : null]}
             onPress={() => {
               setCity(c);
               resetScroll();
             }}
           >
-            <Text style={[styles.chipText, city === c && styles.chipTextActive]}>
+            <Text style={[styles.chipText, city === c ? styles.chipTextActive : null]}>
               {c === 'all' ? 'Toutes' : c}
             </Text>
           </TouchableOpacity>
@@ -96,46 +103,42 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow} contentContainerStyle={styles.filtersContent}>
         <Text style={styles.filterLabel}>Type</Text>
-        {(
-          [
-            ['all', 'Tous'],
-            ['appartement', 'Appart.'],
-            ['maison', 'Maison'],
-            ['villa', 'Villa'],
-          ] as const
-        ).map(([value, label]) => (
+        {[
+          { value: 'all' as TypeFilter, label: 'Tous' },
+          { value: 'appartement' as TypeFilter, label: 'Appart.' },
+          { value: 'maison' as TypeFilter, label: 'Maison' },
+          { value: 'villa' as TypeFilter, label: 'Villa' },
+        ].map((item) => (
           <TouchableOpacity
-            key={value}
-            style={[styles.chip, type === value && styles.chipActive]}
+            key={item.value}
+            style={[styles.chip, type === item.value ? styles.chipActive : null]}
             onPress={() => {
-              setType(value);
+              setType(item.value);
               resetScroll();
             }}
           >
-            <Text style={[styles.chipText, type === value && styles.chipTextActive]}>{label}</Text>
+            <Text style={[styles.chipText, type === item.value ? styles.chipTextActive : null]}>{item.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersRow} contentContainerStyle={styles.filtersContent}>
         <Text style={styles.filterLabel}>Prix</Text>
-        {(
-          [
-            ['all', 'Tous'],
-            ['under300', '≤ 300k'],
-            ['300to500', '300–500k'],
-            ['500to700', '500–700k'],
-          ] as const
-        ).map(([value, label]) => (
+        {[
+          { value: 'all' as PriceFilter, label: 'Tous' },
+          { value: 'under300' as PriceFilter, label: '≤ 300k' },
+          { value: '300to500' as PriceFilter, label: '300–500k' },
+          { value: '500to700' as PriceFilter, label: '500–700k' },
+        ].map((item) => (
           <TouchableOpacity
-            key={value}
-            style={[styles.chip, price === value && styles.chipActive]}
+            key={item.value}
+            style={[styles.chip, price === item.value ? styles.chipActive : null]}
             onPress={() => {
-              setPrice(value);
+              setPrice(item.value);
               resetScroll();
             }}
           >
-            <Text style={[styles.chipText, price === value && styles.chipTextActive]}>{label}</Text>
+            <Text style={[styles.chipText, price === item.value ? styles.chipTextActive : null]}>{item.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -155,7 +158,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
           </TouchableOpacity>
         </View>
       ) : (
-        <>
+        <View style={styles.listBlock}>
           <ScrollView
             ref={scrollRef}
             horizontal
@@ -177,37 +180,31 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                     <Text style={styles.tapHint}>Voir sur Al Omrane →</Text>
                   </View>
                   <View style={styles.body}>
-                    <Text style={styles.city}>{project.city}</Text>
+                    <Text style={styles.cityText}>{project.city}</Text>
                     <Text style={styles.cardTitle} numberOfLines={2}>
                       {project.title}
                     </Text>
                     <Text style={styles.desc} numberOfLines={2}>
                       {project.description}
                     </Text>
-                    {project.priceMax != null && (
+                    {project.priceMax != null ? (
                       <Text style={styles.priceMax}>
-                        Jusqu’à {project.priceMax.toLocaleString('fr-MA')} DH
+                        Jusqu'à {project.priceMax.toLocaleString('fr-MA')} DH
                       </Text>
-                    )}
+                    ) : null}
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.simButton} activeOpacity={0.85} onPress={() => onSimulate?.()}>
+                <TouchableOpacity style={styles.simButton} activeOpacity={0.85} onPress={() => onSimulate && onSimulate()}>
                   <Ionicons name="calculator-outline" size={20} color="#fff" />
                   <Text style={styles.simButtonText}>Simulation</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
-
-          <View style={styles.dots}>
-            {filtered.map((_, i) => (
-              <View key={i} style={[styles.dot, i === index && styles.dotActive]} />
-            ))}
-          </View>
           <Text style={styles.counter}>
             {Math.min(index + 1, filtered.length)} / {filtered.length}
           </Text>
-        </>
+        </View>
       )}
 
       <AdBanner />
@@ -219,9 +216,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, paddingTop: 8 },
   title: { fontSize: 22, fontWeight: '800', color: Colors.primary, paddingHorizontal: 20 },
   subtitle: { fontSize: 12, color: Colors.textLight, paddingHorizontal: 20, marginBottom: 8, marginTop: 2 },
-  filtersRow: { maxHeight: 40, marginBottom: 6 },
-  filtersContent: { paddingHorizontal: 16, alignItems: 'center', gap: 6 },
-  filterLabel: { fontSize: 12, fontWeight: '700', color: Colors.textLight, marginRight: 4 },
+  filtersRow: { maxHeight: 44, marginBottom: 4 },
+  filtersContent: { paddingHorizontal: 16, alignItems: 'center', paddingRight: 24 },
+  filterLabel: { fontSize: 12, fontWeight: '700', color: Colors.textLight, marginRight: 8 },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -229,10 +226,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: Colors.border,
+    marginRight: 8,
   },
   chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   chipText: { fontSize: 12, color: Colors.text, fontWeight: '500' },
   chipTextActive: { color: '#fff', fontWeight: '700' },
+  listBlock: { flex: 1 },
   scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   body: { padding: 14 },
-  city: { fontSize: 13, color: Colors.secondary, fontWeight: '700', marginBottom: 4 },
+  cityText: { fontSize: 13, color: Colors.secondary, fontWeight: '700', marginBottom: 4 },
   cardTitle: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 6 },
   desc: { fontSize: 13, color: Colors.textLight, lineHeight: 18 },
   priceMax: { marginTop: 8, fontSize: 14, fontWeight: '700', color: Colors.primary },
@@ -273,15 +272,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     paddingVertical: 14,
     borderRadius: 14,
   },
-  simButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  dots: { flexDirection: 'row', justifyContent: 'center', marginTop: 10, gap: 5, flexWrap: 'wrap', paddingHorizontal: 20 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.border },
-  dotActive: { backgroundColor: Colors.secondary, width: 16 },
-  counter: { textAlign: 'center', marginTop: 6, fontSize: 12, color: Colors.textMuted },
+  simButtonText: { color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 8 },
+  counter: { textAlign: 'center', marginTop: 8, marginBottom: 4, fontSize: 12, color: Colors.textMuted },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: { fontSize: 15, color: Colors.textLight, marginBottom: 12 },
   resetLink: { fontSize: 15, color: Colors.primary, fontWeight: '700' },
