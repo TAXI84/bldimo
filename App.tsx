@@ -51,7 +51,7 @@ export default function App() {
 function TabButton({ label, icon, active, onPress }: { label: string; icon: any; active: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.tabButton} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon} size={22} color={active ? Colors.primary : '#94A3B8'} />
+      <Ionicons name={icon} size={24} color={active ? Colors.primary : '#94A3B8'} />
       <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
       {active && <View style={styles.activeIndicator} />}
     </TouchableOpacity>
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { 
     backgroundColor: Colors.primary, 
-    paddingTop: Platform.OS === 'android' ? 38 : 48,
+    paddingTop: Platform.OS === 'android' ? 36 : 46,
     paddingBottom: 12, 
     paddingHorizontal: 20,
     alignItems: 'flex-start',
@@ -89,20 +89,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingBottom: Platform.OS === 'android' ? 28 : 24,
-    paddingTop: 10,
-    elevation: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'android' ? 48 : 34,
+    elevation: 20,
   },
   tabButton: { 
     flex: 1, 
     alignItems: 'center', 
-    paddingVertical: 4,
+    paddingVertical: 6,
     position: 'relative',
   },
   tabLabel: { 
     fontSize: 11, 
     color: '#94A3B8', 
-    marginTop: 3, 
+    marginTop: 4, 
     fontWeight: '500',
   },
   tabLabelActive: { 
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: -4,
-    width: 22,
+    bottom: 2,
+    width: 24,
     height: 3,
     borderRadius: 2,
     backgroundColor: Colors.secondary,
