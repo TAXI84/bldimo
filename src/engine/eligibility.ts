@@ -1,270 +1,216 @@
-import { SimulationInput, SimulationResult, DeviceResult, ConditionResult, ProfileType } from '../types';
+import { SimulationInput, SimulationResult, DeviceResult, ConditionResult, ProfessionType, FinancingType } from '../types';
 
-function getDaamSakaneAmount(price: number): number | null {
+function getAideDirecteAmount(price: number): number | null {
   if (price <= 0 || price > 700000) return null;
   if (price <= 300000) return 100000;
   return 70000;
 }
 
-function evaluateDaamSakane(input: SimulationInput): DeviceResult {
+function evaluateAideDirecte(input: SimulationInput): DeviceResult {
   const conditions: ConditionResult[] = [];
   const refusalReasons: string[] = [];
   let eligible = true;
-
   const isMoroccan = input.profile === 'marocain' || input.profile === 'mre';
-  conditions.push({
-    id: 'nationality',
-    label: 'Nationalité marocaine (résident ou MRE)',
-    valid: isMoroccan,
-    message: isMoroccan ? undefined : 'Daam Sakane réservé aux Marocains'
-  });
-  if (!isMoroccan) {
-    eligible = false;
-    refusalReasons.push('Nationalité marocaine requise');
-  }
 
-  conditions.push({
-    id: 'not_owner',
-    label: 'Ne pas être propriétaire d\'un bien d\'habitation au Maroc',
-    valid: !input.isOwnerInMorocco
-  });
-  if (input.isOwnerInMorocco) {
-    eligible = false;
-    refusalReasons.push('Vous êtes déjà propriétaire au Maroc');
-  }
+  if (!isMoroccan) { eligible = false; refusalReasons.push('Nationalité marocaine requise'); }
+  conditions.push({ id: 'nationality', label: 'Nationalité marocaine (résident ou MRE)', valid: isMoroccan });
 
-  conditions.push({
-    id: 'never_aided',
-    label: 'N\'avoir jamais bénéficié d\'une aide de l\'État pour le logement',
-    valid: !input.hasReceivedStateAid
-  });
-  if (input.hasReceivedStateAid) {
-    eligible = false;
-    refusalReasons.push('Vous avez déjà bénéficié d\'une aide de l\'État');
-  }
+  if (input.isOwnerInMorocco) { eligible = false; refusalReasons.push('Déjà propriétaire au Maroc'); }
+  conditions.push({ id: 'not_owner', label: 'Ne pas être propriétaire au Maroc', valid: !input.isOwnerInMorocco });
 
-  const isNewHousing = input.propertyType !== 'terrain';
-  conditions.push({
-    id: 'new_housing',
-    label: 'Logement neuf (1ère vente)',
-    valid: isNewHousing
-  });
-  if (!isNewHousing) {
-    eligible = false;
-    refusalReasons.push('Les terrains ne sont pas éligibles');
-  }
+  if (input.hasReceivedStateAid) { eligible = false; refusalReasons.push('Déjà bénéficié d\'une aide de l\'État'); }
+  conditions.push({ id: 'never_aided', label: 'Jamais bénéficié d\'aide État', valid: !input.hasReceivedStateAid });
 
-  conditions.push({
-    id: 'permit_2023',
-    label: 'Permis d\'habiter délivré à partir du 01/01/2023',
-    valid: true,
-    message: 'À vérifier lors de la demande officielle'
-  });
+  if (input.propertyType === 'terrain') { eligible = false; refusalReasons.push('Terrains non éligibles'); }
+  conditions.push({ id: 'housing', label: 'Logement (pas terrain)', valid: input.propertyType !== 'terrain' });
 
-  const priceOk = input.priceTTC > 0 && input.priceTTC <= 700000;
-  conditions.push({
-    id: 'price_max',
-    label: 'Prix d\'achat TTC ≤ 700 000 DH',
-    valid: priceOk
-  });
-  if (!priceOk) {
-    eligible = false;
-    refusalReasons.push(`Prix trop élevé (${input.priceTTC.toLocaleString()} DH > 700 000 DH)}`);
-  }
+  if (input.priceTTC <= 0 || input.priceTTC > 700000) { eligible = false; refusalReasons.push('Prix hors plafond (max 700 000 DH)'); }
+  conditions.push({ id: 'price_max', label: 'Prix TTC ≤ 700 000 DH', valid: input.priceTTC > 0 && input.priceTTC <= 700000 });
 
-  const roomsOk = input.rooms >= 2;
-  conditions.push({
-    id: 'min_rooms',
-    label: 'Au moins 2 pièces',
-    valid: roomsOk
-  });
-  if (!roomsOk) {
-    eligible = false;
-    refusalReasons.push('Le logement doit comporter au moins 2 pièces');
-  }
+  if (input.rooms < 2) { eligible = false; refusalReasons.push('Minimum 2 pièces'); }
+  conditions.push({ id: 'min_rooms', label: 'Au moins 2 pièces', valid: input.rooms >= 2 });
 
-  conditions.push({
-    id: 'notary',
-    label: 'Compromis et contrat passés devant notaire',
-    valid: true,
-    message: 'Obligatoire pour la demande'
-  });
+  if (!input.isPrincipalResidence) { eligible = false; refusalReasons.push('Résidence principale 5 ans requise'); }
+  conditions.push({ id: 'principal_5y', label: 'Résidence principale 5 ans', valid: input.isPrincipalResidence });
 
-  conditions.push({
-    id: 'principal_5y',
-    label: 'Engagement résidence principale pendant 5 ans',
-    valid: input.isPrincipalResidence
-  });
-  if (!input.isPrincipalResidence) {
-    eligible = false;
-    refusalReasons.push('Le logement doit être affecté à la résidence principale pendant 5 ans');
-  }
-
-  const amount = eligible ? getDaamSakaneAmount(input.priceTTC) : undefined;
+  const amount = eligible ? getAideDirecteAmount(input.priceTTC) ?? undefined : undefined;
+  const documents = [
+    'Formulaire de demande d\'aide au logement',
+    'Déclaration sur l\'honneur',
+    'CIN / Passeport',
+    'Attestation de non-propriété',
+    'Compromis de vente notarié',
+    'Permis d\'habiter ≥ 01/01/2023',
+    'Engagement résidence principale 5 ans',
+  ];
+  if (input.profile === 'mre') documents.push('Attestation compte bancaire marocain');
 
   return {
-    name: 'Daam Sakane (Aide directe de l\'État)',
-    eligible: eligible && amount !== null,
-    amount: amount ?? undefined,
-    advantages: amount ? [`Aide directe de ${amount.toLocaleString()} DH`] : [],
+    id: 'aide_directe',
+    name: 'Aide directe de l\'État (logement)',
+    shortName: 'Aide directe',
+    eligible: !!eligible && amount != null,
+    amount,
+    advantages: amount ? [`Aide directe de ${amount.toLocaleString('fr-MA')} DH`, 'Frais de notaire plafonnés'] : [],
     conditions,
-    refusalReasons
+    refusalReasons,
+    documents: eligible ? documents : [],
   };
 }
 
-function evaluateClasseMoyenne(input: SimulationInput): DeviceResult {
+function evaluateFogarim(input: SimulationInput): DeviceResult {
   const conditions: ConditionResult[] = [];
   const refusalReasons: string[] = [];
   let eligible = true;
+  const isMoroccan = input.profile === 'marocain' || input.profile === 'mre';
 
-  const isResident = input.profile === 'etranger_resident' || input.profile === 'marocain' || input.profile === 'mre';
-  conditions.push({
-    id: 'resident',
-    label: 'Résident au Maroc en situation régulière',
-    valid: isResident
-  });
-  if (!isResident) {
-    eligible = false;
-    refusalReasons.push('Réservé aux résidents au Maroc');
-  }
+  if (!isMoroccan) { eligible = false; refusalReasons.push('Nationalité marocaine requise'); }
+  conditions.push({ id: 'nationality', label: 'Nationalité marocaine / MRE', valid: isMoroccan });
 
-  const incomeOk = (input.monthlyIncome ?? 99999) <= 20000;
-  conditions.push({
-    id: 'income',
-    label: 'Revenu mensuel net ≤ 20 000 DH',
-    valid: incomeOk
-  });
-  if (!incomeOk) {
-    eligible = false;
-    refusalReasons.push('Revenu supérieur à 20 000 DH');
-  }
+  if (input.financingType === 'cash') { eligible = false; refusalReasons.push('FOGARIM = crédit garanti (pas cash)'); }
+  conditions.push({ id: 'financing', label: 'Financement par crédit', valid: input.financingType !== 'cash' });
 
-  conditions.push({
-    id: 'principal_4y',
-    label: 'Affectation en résidence principale pendant 4 ans',
-    valid: input.isPrincipalResidence
-  });
-  if (!input.isPrincipalResidence) {
-    eligible = false;
-    refusalReasons.push('Doit être résidence principale');
-  }
+  const modest: ProfessionType[] = ['revenu_irregulier', 'independant', 'commercant', 'sans_activite', 'autre'];
+  const isModest = !input.profession || modest.includes(input.profession) || (input.monthlyIncome != null && input.monthlyIncome <= 10000);
+  conditions.push({ id: 'income_profile', label: 'Revenus modestes ou irréguliers', valid: isModest });
 
-  if (input.surface) {
-    const surfaceOk = input.surface >= 80 && input.surface <= 150;
-    conditions.push({
-      id: 'surface',
-      label: 'Superficie entre 80 et 150 m²',
-      valid: surfaceOk
-    });
-    if (!surfaceOk) {
-      eligible = false;
-      refusalReasons.push('Superficie hors fourchette 80-150 m²');
-    }
-  }
+  if (input.isOwnerInMorocco) { eligible = false; refusalReasons.push('Déjà propriétaire'); }
+  conditions.push({ id: 'not_owner', label: 'Primo-accédant', valid: !input.isOwnerInMorocco });
+
+  if (input.hasReceivedStateAid) { eligible = false; refusalReasons.push('Déjà bénéficié garantie/aide État'); }
+  conditions.push({ id: 'never_aided', label: 'Pas de crédit garanti antérieur', valid: !input.hasReceivedStateAid });
+
+  if (!input.isPrincipalResidence) { eligible = false; refusalReasons.push('Résidence principale requise'); }
+  conditions.push({ id: 'principal', label: 'Habitation principale', valid: input.isPrincipalResidence });
+
+  const documents = [
+    'Demande de crédit (banque partenaire Damane Assakane)',
+    'CIN / Passeport',
+    'Justificatifs de revenus ou déclaration sur l\'honneur',
+    'Attestation de non-propriété',
+    'Compromis de vente',
+    'Engagement d\'habitation personnelle',
+  ];
 
   return {
-    name: 'Logement destiné à la classe moyenne',
+    id: 'fogarim',
+    name: 'FOGARIM (Garantie Damane Assakane – revenus modestes)',
+    shortName: 'FOGARIM',
     eligible,
-    advantages: eligible ? [
-      'Exonération des droits d\'enregistrement',
-      'Exonération des droits de timbre',
-      'Exonération des droits d\'inscription sur titres fonciers'
-    ] : [],
+    advantages: eligible ? ['Garantie publique du crédit', 'Accès facilité pour revenus modestes/irréguliers', 'Durée possible jusqu\'à 25 ans'] : [],
     conditions,
-    refusalReasons
+    refusalReasons,
+    documents: eligible ? documents : [],
   };
 }
 
-function evaluateInvestisseur(input: SimulationInput): DeviceResult {
-  const isInvestor = input.profile === 'etranger_investisseur';
+function evaluateFogaloge(input: SimulationInput): DeviceResult {
+  const conditions: ConditionResult[] = [];
+  const refusalReasons: string[] = [];
+  let eligible = true;
+  const isMoroccan = input.profile === 'marocain' || input.profile === 'mre';
+
+  if (!isMoroccan) { eligible = false; refusalReasons.push('Nationalité marocaine requise'); }
+  conditions.push({ id: 'nationality', label: 'Nationalité marocaine / MRE', valid: isMoroccan });
+
+  if (input.financingType === 'cash') { eligible = false; refusalReasons.push('FOGALOGE = crédit garanti'); }
+  conditions.push({ id: 'financing', label: 'Financement par crédit', valid: input.financingType !== 'cash' });
+
+  const formal: ProfessionType[] = ['salarie_public', 'salarie_prive', 'liberal', 'commercant', 'independant'];
+  const isFormal = !input.profession || formal.includes(input.profession);
+  conditions.push({ id: 'profession', label: 'Salarié / fonctionnaire / libéral / commerçant', valid: isFormal });
+
+  if (input.isOwnerInMorocco) { eligible = false; refusalReasons.push('Déjà propriétaire'); }
+  conditions.push({ id: 'not_owner', label: 'Primo-accédant', valid: !input.isOwnerInMorocco });
+
+  if (input.hasReceivedStateAid) { eligible = false; refusalReasons.push('Déjà bénéficié garantie/aide État'); }
+  conditions.push({ id: 'never_aided', label: 'Pas de crédit garanti antérieur', valid: !input.hasReceivedStateAid });
+
+  if (!input.isPrincipalResidence) { eligible = false; refusalReasons.push('Résidence principale requise'); }
+  conditions.push({ id: 'principal', label: 'Habitation principale', valid: input.isPrincipalResidence });
+
+  const documents = [
+    'Demande de crédit (banque partenaire)',
+    'CIN / Passeport',
+    'Bulletins de salaire (3 mois) ou justificatifs revenus',
+    'Attestation de travail / CNSS',
+    'Attestation de non-propriété',
+    'Compromis de vente',
+    'Engagement d\'habitation personnelle',
+  ];
+
   return {
-    name: 'Avantages fiscaux investisseurs étrangers',
-    eligible: isInvestor,
-    advantages: isInvestor ? [
-      'Garantie de transfert des produits de vente hors Maroc',
-      'Protection des investissements',
-      'Libre transfert des capitaux',
-      'Avantages possibles en zones franches'
-    ] : [],
-    conditions: [{
-      id: 'investor',
-      label: 'Statut d\'investisseur non-résident',
-      valid: isInvestor
-    }],
-    refusalReasons: isInvestor ? [] : ['Réservé aux investisseurs non-résidents']
+    id: 'fogaloge',
+    name: 'FOGALOGE (Garantie Damane Assakane – classe moyenne)',
+    shortName: 'FOGALOGE',
+    eligible,
+    advantages: eligible ? ['Garantie publique du crédit', 'Adapté salariés / fonctionnaires / libéraux', 'Couverture facilitant le financement', 'Durée possible jusqu\'à 25 ans'] : [],
+    conditions,
+    refusalReasons,
+    documents: eligible ? documents : [],
+  };
+}
+
+function evaluateEtrangerResident(input: SimulationInput): DeviceResult {
+  const isResident = input.profile === 'etranger_resident';
+  const refusalReasons: string[] = [];
+  if (!isResident) refusalReasons.push('Profil étranger résident requis');
+  if (input.isOwnerInMorocco) refusalReasons.push('Déjà propriétaire au Maroc');
+
+  return {
+    id: 'etranger_resident',
+    name: 'Accès logement – Étranger résident',
+    shortName: 'Étranger résident',
+    eligible: isResident && !input.isOwnerInMorocco,
+    advantages: isResident ? ['Achat possible avec titre de séjour', 'Crédit bancaire classique possible', 'Pas d\'aide directe (réservée aux Marocains)'] : [],
+    conditions: [
+      { id: 'status', label: 'Titre de séjour valide', valid: isResident },
+      { id: 'not_owner', label: 'Pas déjà propriétaire', valid: !input.isOwnerInMorocco },
+    ],
+    refusalReasons,
+    documents: isResident ? ['Titre de séjour', 'Passeport', 'Justificatifs de revenus', 'Compromis de vente'] : [],
   };
 }
 
 export function runSimulation(input: SimulationInput): SimulationResult {
   const devices: DeviceResult[] = [];
 
-  devices.push(evaluateDaamSakane(input));
-
-  if (input.profile === 'etranger_resident' || input.profile === 'marocain' || input.profile === 'mre') {
-    devices.push(evaluateClasseMoyenne(input));
-  }
-
-  if (input.profile === 'etranger_investisseur') {
-    devices.push(evaluateInvestisseur(input));
+  if (input.profile === 'marocain' || input.profile === 'mre') {
+    devices.push(evaluateAideDirecte(input));
+    devices.push(evaluateFogarim(input));
+    devices.push(evaluateFogaloge(input));
+  } else if (input.profile === 'etranger_resident') {
+    devices.push(evaluateEtrangerResident(input));
+  } else {
+    devices.push({
+      id: 'investisseur',
+      name: 'Investissement immobilier – Non-résident',
+      shortName: 'Investisseur',
+      eligible: true,
+      advantages: ['Achat sous conditions de change', 'Pas d\'aide directe de l\'État', 'Crédit selon politique banque'],
+      conditions: [],
+      refusalReasons: [],
+      documents: ['Passeport', 'Justificatifs de fonds', 'Compromis de vente'],
+    });
   }
 
   const isEligibleForAny = devices.some(d => d.eligible);
-  const notaryFees = input.priceTTC <= 700000 ? 2500 : 0;
+  const docSet = new Set<string>();
+  devices.filter(d => d.eligible).forEach(d => d.documents.forEach(doc => docSet.add(doc)));
+  const documents = Array.from(docSet);
+  const notaryFees = input.priceTTC > 0 && input.priceTTC <= 700000 ? 1500 : 0;
 
-  const documents: string[] = [
-    'Promesse de vente / Compromis de vente',
-    'Contrat de vente définitif',
-    'Acte notarié',
-    'Quittance de paiement',
-  ];
-
-  if (devices.some(d => d.name.includes('Daam Sakane') && d.eligible)) {
-    documents.unshift(
-      'Formulaire de demande Daam Sakane (signé et légalisé)',
-      'Déclaration sur l\'honneur (signée et légalisée)',
-      'Copie CIN / Passeport',
-      'Attestation de non-propriété (Conservation foncière)',
-      'Copie du permis d\'habiter (≥ 01/01/2023)',
-      'Justificatif de revenus (3 derniers mois)',
-      'Engagement de résidence principale (5 ans)'
-    );
-    if (input.profile === 'mre') {
-      documents.push('Attestation de compte bancaire marocain');
-    }
-  }
-
-  if (input.profile === 'etranger_resident') {
-    documents.push('Titre de séjour en cours de validité');
-  }
-
+  const eligibleDevices = devices.filter(d => d.eligible);
   let summary = '';
-  if (input.profile === 'marocain' || input.profile === 'mre') {
-    const daam = devices.find(d => d.name.includes('Daam Sakane'));
-    if (daam?.eligible && daam.amount) {
-      summary = `✅ Éligible à Daam Sakane : ${daam.amount.toLocaleString()} DH d'aide directe.`;
-      if (input.profile === 'mre') {
-        summary += ' (Compte bancaire marocain obligatoire pour le virement)';
-      }
-    } else {
-      summary = `❌ Non éligible à Daam Sakane. Motifs : ${daam?.refusalReasons.join(', ') || 'Conditions non remplies'}`;
-    }
-  } else if (input.profile === 'etranger_resident') {
-    const cm = devices.find(d => d.name.includes('classe moyenne'));
-    if (cm?.eligible) {
-      summary = '✅ Éligible au dispositif Logement classe moyenne (exonérations fiscales).';
-    } else {
-      summary = 'ℹ️ Aucun dispositif d\'aide directe. Orientation vers crédit immobilier classique.';
-    }
+  if (eligibleDevices.length === 0) {
+    summary = '❌ Aucune aide / garantie identifiée avec les informations fournies.';
   } else {
-    summary = 'ℹ️ Profil investisseur : avantages fiscaux et garantie de transfert disponibles.';
+    const names = eligibleDevices.map(d => d.shortName).join(', ');
+    const aide = eligibleDevices.find(d => d.id === 'aide_directe' && d.amount);
+    summary = aide?.amount
+      ? `✅ Éligible à : ${names}. Aide directe estimée : ${aide.amount.toLocaleString('fr-MA')} DH.`
+      : `✅ Dispositifs possibles : ${names}.`;
   }
 
-  return {
-    profile: input.profile,
-    devices,
-    notaryFees,
-    documents: [...new Set(documents)],
-    summary,
-    isEligibleForAny
-  };
+  return { profile: input.profile, devices, notaryFees, documents, summary, isEligibleForAny };
 }
