@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MarocainScreen from './app/index';
 import MREScreen from './app/mre';
 import EtrangerScreen from './app/etranger';
@@ -29,22 +30,33 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+    <View style={styles.rootContainer}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F4EE" />
 
+      {/* Moroccan background - behind everything */}
       <MoroccanBackground />
 
-      <AdBanner />
+      {/* Safe area container for header */}
+      <SafeAreaView style={styles.headerContainer} edges={['top']}>
+        {/* Ad Banner */}
+        <AdBanner />
 
-      <View style={styles.brandingContainer}>
-        <Text style={styles.brandingTitle}>bldimo</Text>
-        <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
+        {/* Branding centered */}
+        <View style={styles.brandingContainer}>
+          <Text style={styles.brandingTitle}>bldimo</Text>
+          <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
+        </View>
+
+        {/* Zellige accent */}
+        <ZelligeAccent />
+      </SafeAreaView>
+
+      {/* Content area */}
+      <View style={styles.contentWrapper}>
+        {renderScreen()}
       </View>
 
-      <ZelligeAccent />
-
-      <View style={styles.content}>{renderScreen()}</View>
-
+      {/* Bottom navigation */}
       <View style={styles.tabBar}>
         <TabButton
           label="Projets"
@@ -88,7 +100,7 @@ function TabButton({
 }) {
   return (
     <TouchableOpacity style={styles.tabButton} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon} size={22} color={active ? Colors.primary : '#94A3B8'} />
+      <Ionicons name={icon} size={24} color={active ? '#005C9E' : '#94A3B8'} />
       <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
       {active && <View style={styles.activeIndicator} />}
     </TouchableOpacity>
@@ -96,57 +108,83 @@ function TabButton({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  rootContainer: {
+    flex: 1,
+    backgroundColor: '#F7F4EE',
+  },
+
+  headerContainer: {
+    backgroundColor: '#F7F4EE',
+    zIndex: 10,
+  },
+
   brandingContainer: {
-    paddingTop: Platform.OS === 'android' ? 12 : 16,
-    paddingBottom: 8,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
+    backgroundColor: '#F7F4EE',
   },
+
   brandingTitle: {
-    color: Colors.primary,
-    fontSize: 32,
+    color: '#005C9E',
+    fontSize: 36,
     fontWeight: '900',
-    letterSpacing: 1.2,
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
+
   brandingSubtitle: {
-    color: Colors.textLight,
+    color: '#64748B',
     fontSize: 12,
-    marginTop: 4,
     fontWeight: '500',
+    letterSpacing: 0.3,
   },
-  content: { flex: 1 },
+
+  contentWrapper: {
+    flex: 1,
+    backgroundColor: '#F7F4EE',
+    zIndex: 1,
+  },
+
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'android' ? 48 : 34,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'android' ? 48 : 20,
     elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
+
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 8,
     position: 'relative',
   },
+
   tabLabel: {
     fontSize: 11,
     color: '#94A3B8',
     marginTop: 4,
     fontWeight: '500',
   },
+
   tabLabelActive: {
-    color: Colors.primary,
+    color: '#005C9E',
     fontWeight: '700',
   },
+
   activeIndicator: {
     position: 'absolute',
-    bottom: 2,
-    width: 24,
+    bottom: 0,
+    width: 28,
     height: 3,
     borderRadius: 2,
-    backgroundColor: Colors.secondary,
+    backgroundColor: '#0D9488',
   },
 });
