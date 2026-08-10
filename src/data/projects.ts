@@ -9,6 +9,7 @@ export interface Project {
   type: 'appartement' | 'maison' | 'villa';
   priceMax?: number;
   url: string;
+  imageUrl?: string | null;
   imageColor: string;
 }
 
