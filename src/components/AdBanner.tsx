@@ -2,27 +2,42 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function AdBanner() {
   return (
-    <TouchableOpacity style={styles.banner} activeOpacity={0.9}>
-      <View style={styles.adContent}>
-        <View style={styles.adLeft}>
-          <Text style={styles.adBrand}>ADIDAS</Text>
-          <Text style={styles.adTitle}>Nouvelle collection</Text>
-          <Text style={styles.adSubtitle}>Découvre les dernières sorties</Text>
-        </View>
-        <View style={styles.adRight}>
-          <Text style={styles.adCta}>VOIR</Text>
-        </View>
-      </View>
+    <View style={styles.container}>
       <Text style={styles.adLabel}>Publicité</Text>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.banner} activeOpacity={0.9}>
+        <View style={styles.adContent}>
+          <View style={styles.adLeft}>
+            <Text style={styles.adBrand}>ADIDAS</Text>
+            <Text style={styles.adTitle}>Nouvelle collection</Text>
+            <Text style={styles.adSubtitle}>Découvre les dernières sorties</Text>
+          </View>
+          <View style={styles.adRight}>
+            <Text style={styles.adCta}>VOIR</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: '#111',
+  container: {
+    position: 'relative',
     marginHorizontal: 16,
     marginVertical: 12,
+    marginTop: 0,
+  },
+  adLabel: {
+    position: 'absolute',
+    top: 8,
+    right: 10,
+    color: '#999',
+    fontSize: 9,
+    fontWeight: '600',
+    zIndex: 10,
+  },
+  banner: {
+    backgroundColor: '#1A1A1A',
     borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
@@ -63,13 +78,5 @@ const styles = StyleSheet.create({
     color: '#111',
     fontSize: 13,
     fontWeight: '800',
-  },
-  adLabel: {
-    position: 'absolute',
-    top: 6,
-    right: 10,
-    color: '#666',
-    fontSize: 9,
-    fontWeight: '600',
   },
 });
