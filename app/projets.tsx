@@ -6,7 +6,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { getProjects, Project } from '../src/data/projects';
 import { Colors } from '../src/constants/theme';
-import AdBanner from '../src/components/AdBanner';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_W - 48;
@@ -179,8 +178,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         ) : <View style={{ height: 18 }} />}
       </View>
 
-      <AdBanner />
-
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Aucun projet avec ces filtres</Text>
@@ -214,7 +211,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                     <Text style={styles.cardTitle} numberOfLines={2}>{project.title}</Text>
                     <Text style={styles.desc} numberOfLines={2}>{project.description}</Text>
                     {project.priceMax != null ? (
-                      <Text style={styles.priceMax}>Jusqu’à {project.priceMax.toLocaleString('fr-MA')} DH</Text>
+                      <Text style={styles.priceMax}>Jusqu'à {project.priceMax.toLocaleString('fr-MA')} DH</Text>
                     ) : null}
                   </View>
                 </TouchableOpacity>
@@ -268,7 +265,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '800', color: Colors.primary, paddingHorizontal: 16 },
   subtitle: { fontSize: 12, color: Colors.textLight, paddingHorizontal: 16, marginBottom: 8, marginTop: 2 },
   filterLine: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, gap: 8, marginBottom: 4 },
-  dropBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border, maxWidth: 120, gap: 4 },
+  dropBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border, maxWidth: 100 },
   dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 90 },
   priceHint: { flex: 1, alignItems: 'flex-end', paddingRight: 4 },
   priceHintText: { fontSize: 12, color: Colors.textLight, fontWeight: '600' },
