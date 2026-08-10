@@ -4,7 +4,7 @@ import {
   NativeSyntheticEvent, NativeScrollEvent, Modal, Pressable, PanResponder, LayoutChangeEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SAMPLE_PROJECTS, Project } from '../src/data/projects';
+import { getProjects, Project } from '../src/data/projects';
 import { Colors } from '../src/constants/theme';
 import AdBanner from '../src/components/AdBanner';
 
@@ -14,6 +14,8 @@ const CARD_MARGIN = 12;
 const PRICE_MIN = 25000;
 const PRICE_MAX = 700000;
 const PRICE_STEP = 1000;
+
+const ALL_PROJECTS = getProjects();
 
 type TypeFilter = 'all' | 'appartement' | 'maison' | 'villa';
 interface Props { onSimulate?: () => void; }
@@ -38,12 +40,12 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 
   const cities = useMemo(() => {
     const list: string[] = [];
-    SAMPLE_PROJECTS.forEach((p) => { if (list.indexOf(p.city) === -1) list.push(p.city); });
+    ALL_PROJECTS.forEach((p) => { if (list.indexOf(p.city) === -1) list.push(p.city); });
     list.sort();
     return list;
   }, []);
 
-  const filtered = useMemo(() => SAMPLE_PROJECTS.filter((p) => {
+  const filtered = useMemo(() => ALL_PROJECTS.filter((p) => {
     if (city !== 'all' && p.city !== city) return false;
     if (type !== 'all' && p.type !== type) return false;
     const max = p.priceMax != null ? p.priceMax : 700000;
@@ -134,7 +136,9 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Projets éligibles</Text>
-      <Text style={styles.subtitle}>≤ 700 000 DH • Habitat • Al Omrane</Text>
+      <Text style={styles.subtitle}>
+        {`≤ 700 000 DH • ${ALL_PROJECTS.length} projets • Al Omrane`}
+      </Text>
 
       <View style={styles.filterLine}>
         <TouchableOpacity style={styles.dropBtn} onPress={() => setCityOpen(true)}>
