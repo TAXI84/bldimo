@@ -1,0 +1,36 @@
+{
+  "updatedAt": "2026-08-10T00:10:24.645557+00:00",
+  "source": "https://www.alomrane.gov.ma/Nos-produits/Projets",
+  "priceMaxFilter": 700000,
+  "count": 2,
+  "stats": {
+    "raw": 12,
+    "skippedNonHabitat": 10,
+    "addedSinceLastRun": 2,
+    "removedSinceLastRun": 0
+  },
+  "projects": [
+    {
+      "id": "80d65d34841b",
+      "title": "Résidence IBN KHALDOUN TRANCHE...",
+      "city": "Tanger",
+      "description": "La 3ᵉ tranche de la Résidence Ibn Khaldoun vous ouvre ses portes ! Découvrez des apparteme...",
+      "type": "appartement",
+      "priceMax": 700000,
+      "url": "https://www.alomrane.gov.ma/Notre-reseau/Al-omrane-tanger-tetouan-al-hoceima/Produits/Projets/Residence-ibn-khaldoun-tranche-3-a",
+      "imageColor": "#005C9E",
+      "source": "alomrane"
+    },
+    {
+      "id": "6aa4a1588afc",
+      "title": "Logements Essalam",
+      "city": "Tarfaya",
+      "description": "La commercialisation débutera le 11 août 2026. Essalam Tarfaya est un projet résidentiel...",
+      "type": "appartement",
+      "priceMax": 700000,
+      "url": "https://www.alomrane.gov.ma/Notre-reseau/Al-omrane-al-janoub/Produits/Projets/Logements-essalam",
+      "imageColor": "#0D9488",
+      "source": "alomrane"
+    }
+  ]
+}
