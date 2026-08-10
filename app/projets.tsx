@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Linking,
+  View, Text, Image, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Linking,
   NativeSyntheticEvent, NativeScrollEvent, Modal, Pressable, PanResponder, LayoutChangeEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -196,8 +196,16 @@ export default function ProjetsScreen({ onSimulate }: Props) {
             {filtered.map((project) => (
               <View key={project.id} style={styles.cardWrap}>
                 <TouchableOpacity style={styles.card} activeOpacity={0.95} onPress={() => openAlOmrane(project)}>
-                  <View style={[styles.imageArea, { backgroundColor: project.imageColor }]}>
-                    <Ionicons name="home" size={44} color="rgba(255,255,255,0.9)" />
+                  <View style={[styles.imageArea, { backgroundColor: project.imageColor || '#005C9E' }]}>
+                    {project.imageUrl ? (
+                      <Image
+                        source={{ uri: project.imageUrl }}
+                        style={styles.projectImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Ionicons name="home" size={44} color="rgba(255,255,255,0.9)" />
+                    )}
                     <View style={styles.badge}><Text style={styles.badgeText}>{typeLabel(project.type)}</Text></View>
                     <Text style={styles.tapHint}>Voir sur Al Omrane →</Text>
                   </View>
@@ -279,7 +287,8 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: { backgroundColor: Colors.card, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, elevation: 3 },
-  imageArea: { height: 130, alignItems: 'center', justifyContent: 'center' },
+  imageArea: { height: 150, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  projectImage: { ...StyleSheet.absoluteFillObject, width: '100%' as any, height: '100%' as any },
   badge: { position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.35)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   tapHint: { position: 'absolute', bottom: 8, right: 12, color: 'rgba(255,255,255,0.9)', fontSize: 11, fontWeight: '600' },
