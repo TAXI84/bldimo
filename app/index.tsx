@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { runSimulation } from '../src/engine/eligibility';
 import { SimulationInput, SimulationResult, PropertyType } from '../src/types';
 import ResultCard from '../src/components/ResultCard';
-import AdBanner from '../src/components/AdBanner';
 import { Colors, PROPERTY_TYPES } from '../src/constants/theme';
 
 export default function MarocainScreen() {
@@ -81,8 +80,6 @@ export default function MarocainScreen() {
       </View>
 
       {result && <ResultCard result={result} />}
-
-      <AdBanner />
     </ScrollView>
   );
 }
