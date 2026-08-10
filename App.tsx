@@ -6,6 +6,8 @@ import MREScreen from './app/mre';
 import EtrangerScreen from './app/etranger';
 import ProjetsScreen from './app/projets';
 import ZelligeAccent from './src/components/ZelligeAccent';
+import MoroccanBackground from './src/components/MoroccanBackground';
+import AdBanner from './src/components/AdBanner';
 import { Colors } from './src/constants/theme';
 
 type Tab = 'projets' | 'marocain' | 'mre' | 'etranger';
@@ -30,13 +32,16 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>bldimo</Text>
-        <Text style={styles.headerSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
+      <MoroccanBackground />
+
+      <AdBanner />
+
+      <View style={styles.brandingContainer}>
+        <Text style={styles.brandingTitle}>bldimo</Text>
+        <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
       </View>
 
       <ZelligeAccent />
-      <View style={styles.zelligeLine2} />
 
       <View style={styles.content}>{renderScreen()}</View>
 
@@ -92,28 +97,23 @@ function TabButton({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    backgroundColor: Colors.primary,
-    paddingTop: Platform.OS === 'android' ? 36 : 46,
-    paddingBottom: 12,
+  brandingContainer: {
+    paddingTop: Platform.OS === 'android' ? 12 : 16,
+    paddingBottom: 8,
     paddingHorizontal: 20,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: 1,
+  brandingTitle: {
+    color: Colors.primary,
+    fontSize: 32,
+    fontWeight: '900',
+    letterSpacing: 1.2,
   },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
+  brandingSubtitle: {
+    color: Colors.textLight,
     fontSize: 12,
-    marginTop: 2,
-  },
-  zelligeLine2: {
-    height: 3,
-    backgroundColor: Colors.secondary,
-    opacity: 0.7,
+    marginTop: 4,
+    fontWeight: '500',
   },
   content: { flex: 1 },
   tabBar: {
