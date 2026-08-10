@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 """
 bldimo – Script intelligent d'import Al Omrane
-------------------------------------------------
-Objectif :
-  - Récupérer les projets Al Omrane (prix ≤ 700 000 DH)
-  - Garder uniquement l'habitat (appartement / maison / villa)
-  - Exclure terrains et commerces
-  - Produire src/data/alomrane_projects.json pour l'app
-  - Comparer avec l'ancien fichier : ajouter les nouveaux, retirer les absents
+- Projets prix ≤ 700 000 DH, habitat uniquement
+- 1 image par projet (product_list ou og:image)
+- Sortie : src/data/alomrane_projects.json
 
 Usage :
   pip install requests beautifulsoup4
-  python scripts/fetch_alomrane.py
-
-Option :
-  python scripts/fetch_alomrane.py --max-pages 3
+  python scripts/fetch_alomrane.py --max-pages 2
   python scripts/fetch_alomrane.py --all
+  python scripts/fetch_alomrane.py --all --enrich-images
 """
 
 from __future__ import annotations
@@ -35,7 +29,7 @@ try:
     import requests
     from bs4 import BeautifulSoup
 except ImportError:
-    print("Installez les dépendances : pip install requests beautifulsoup4")
+    print("Installez : pip install requests beautifulsoup4")
     sys.exit(1)
 
 BASE = "https://www.alomrane.gov.ma"
@@ -83,7 +77,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_JSON = ROOT / "src" / "data" / "alomrane_projects.json"
 HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (compatible; bldimo-bot/1.0; +https://github.com/TAXI84/bldimo)"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     ),
     "Accept-Language": "fr-FR,fr;q=0.9",
 }
@@ -109,66 +104,137 @@ def classify_type(title: str, description: str) -> str | None:
     return None
 
 
+def abs_url(src: str | None) -> str | None:
+    if not src:
+        return None
+    src = src.strip()
+    if not src or src.startswith("data:"):
+        return None
+    return urljoin(BASE, src)
+
+
 def parse_list_page(html: str) -> list[dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
 
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        label = (a.get_text() or "").strip().lower()
-        if "/Produits/Projets/" not in href:
+    for img in soup.find_all("img"):
+        src = img.get("src") or img.get("data-src") or ""
+        if "product_list" not in src and "image_gallery" not in src:
             continue
-        if "plus d" not in label and "Produits/Projets" not in href:
-            # keep project detail links even without label
-            if not href.rstrip("/").split("/")[-1]:
-                continue
 
-        url = urljoin(BASE, href)
-        title = ""
+        node = img
+        card = None
+        for _ in range(12):
+            node = getattr(node, "parent", None)
+            if node is None:
+                break
+            links = node.find_all("a", href=True) if hasattr(node, "find_all") else []
+            proj_links = [a for a in links if "/Produits/Projets/" in (a.get("href") or "")]
+            hs = node.find_all(["h2", "h3", "h4"]) if hasattr(node, "find_all") else []
+            if proj_links and hs:
+                card = node
+                break
+        if not card:
+            continue
+
+        title_el = card.find(["h2", "h3", "h4"])
+        title = title_el.get_text(strip=True) if title_el else ""
+
+        href = None
+        for a in card.find_all("a", href=True):
+            h = a.get("href") or ""
+            if "/Produits/Projets/" in h:
+                href = urljoin(BASE, h)
+                break
+        if not href or href in seen_urls:
+            continue
+        seen_urls.add(href)
+
         description = ""
-        city = ""
-
-        prev = a.find_previous(["h2", "h3", "h4"])
-        if prev:
-            title = prev.get_text(strip=True)
-            for sib in prev.next_siblings:
-                if sib is a or (getattr(sib, "name", None) == "a"):
+        if title_el:
+            for sib in title_el.next_siblings:
+                if getattr(sib, "name", None) in ("a", "h2", "h3", "h4"):
                     break
                 if getattr(sib, "get_text", None):
                     t = sib.get_text(" ", strip=True)
-                    if t and t.lower() not in ("plus d'infos", "plus d’infos"):
+                    if t and "plus d" not in t.lower():
                         description = (description + " " + t).strip()
 
-            node = prev
-            for _ in range(8):
-                cand = node.find_previous(["p", "div", "span", "strong"])
-                if not cand:
+        city = ""
+        if title_el:
+            scan = title_el
+            for _ in range(6):
+                scan = scan.find_previous(["p", "div", "span", "strong", "h5", "h6"])
+                if not scan:
                     break
-                txt = cand.get_text(strip=True)
-                if txt and len(txt) < 40 and not txt.lower().startswith("plus"):
-                    if not re.search(r"http|projet|résidence|logement", txt, re.I):
-                        city = txt
-                        break
-                node = cand
-
-        if not title:
-            title = url.rstrip("/").split("/")[-1].replace("-", " ").title()
+                txt = scan.get_text(strip=True)
+                if not txt or len(txt) > 45:
+                    continue
+                if re.search(r"plus d|http|projet|résidence|logement|appartement", txt, re.I):
+                    continue
+                if re.match(r"^[\d\s.,]+$", txt):
+                    continue
+                city = txt
+                break
 
         items.append({
             "title": title[:120],
             "city": city[:60] if city else "",
             "description": description[:280],
-            "url": url,
+            "url": href,
+            "imageUrl": abs_url(src),
         })
 
-    seen: set[str] = set()
-    unique: list[dict[str, Any]] = []
-    for it in items:
-        if it["url"] in seen:
+    for a in soup.find_all("a", href=True):
+        href = a.get("href") or ""
+        if "/Produits/Projets/" not in href:
             continue
-        seen.add(it["url"])
-        unique.append(it)
-    return unique
+        full = urljoin(BASE, href)
+        if full in seen_urls:
+            continue
+        label = (a.get_text() or "").strip().lower()
+        if "plus d" not in label and not full.rstrip("/").split("/")[-1]:
+            continue
+        seen_urls.add(full)
+        prev = a.find_previous(["h2", "h3", "h4"])
+        title = prev.get_text(strip=True) if prev else full.rstrip("/").split("/")[-1]
+        description = ""
+        if prev:
+            for sib in prev.next_siblings:
+                if sib is a or getattr(sib, "name", None) == "a":
+                    break
+                if getattr(sib, "get_text", None):
+                    t = sib.get_text(" ", strip=True)
+                    if t and "plus d" not in t.lower():
+                        description = (description + " " + t).strip()
+        items.append({
+            "title": title[:120],
+            "city": "",
+            "description": description[:280],
+            "url": full,
+            "imageUrl": None,
+        })
+
+    return items
+
+
+def fetch_og_image(session: requests.Session, page_url: str) -> str | None:
+    try:
+        r = session.get(page_url, headers=HEADERS, timeout=25)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        og = soup.find("meta", property="og:image")
+        if og and og.get("content"):
+            return abs_url(og["content"])
+        for img in soup.find_all("img"):
+            src = img.get("src") or ""
+            if "/var/alomrane/storage/" in src and not src.endswith(".svg"):
+                if any(x in src for x in ("gallery", "banner", "product", "media")):
+                    return abs_url(src)
+    except Exception:
+        return None
+    return None
 
 
 def fetch_page(session: requests.Session, page: int) -> str:
@@ -194,7 +260,7 @@ def load_previous() -> dict[str, Any]:
     return {}
 
 
-def run(max_pages: int | None, delay: float) -> None:
+def run(max_pages: int | None, delay: float, enrich_images: bool) -> None:
     session = requests.Session()
     print("→ Récupération page 1…")
     html1 = fetch_page(session, 1)
@@ -219,20 +285,34 @@ def run(max_pages: int | None, delay: float) -> None:
 
     projects: list[dict[str, Any]] = []
     skipped = 0
+    with_image = 0
+
     for i, raw in enumerate(all_raw):
-        ptype = classify_type(raw["title"], raw["description"])
+        ptype = classify_type(raw.get("title") or "", raw.get("description") or "")
         if ptype is None:
             skipped += 1
             continue
+
+        image_url = raw.get("imageUrl")
+        if enrich_images and not image_url and raw.get("url"):
+            time.sleep(delay)
+            image_url = fetch_og_image(session, raw["url"])
+            if image_url:
+                print(f"  + og:image {raw.get('title', '')[:40]}")
+
+        if image_url:
+            with_image += 1
+
         projects.append({
             "id": make_id(raw["url"]),
-            "title": raw["title"] or "Projet Al Omrane",
-            "city": raw["city"] or "Maroc",
-            "description": raw["description"]
+            "title": raw.get("title") or "Projet Al Omrane",
+            "city": raw.get("city") or "Maroc",
+            "description": raw.get("description")
             or "Projet habitat Al Omrane éligible à l’aide au logement (à vérifier sur la fiche).",
             "type": ptype,
             "priceMax": PRICE_MAX,
             "url": raw["url"],
+            "imageUrl": image_url,
             "imageColor": COLORS[i % len(COLORS)],
             "source": "alomrane",
         })
@@ -256,6 +336,7 @@ def run(max_pages: int | None, delay: float) -> None:
         "stats": {
             "raw": len(all_raw),
             "skippedNonHabitat": skipped,
+            "withImage": with_image,
             "addedSinceLastRun": added,
             "removedSinceLastRun": removed,
         },
@@ -267,6 +348,7 @@ def run(max_pages: int | None, delay: float) -> None:
 
     print("———")
     print(f"✓ Habitat conservés : {len(projects)}")
+    print(f"✓ Avec image : {with_image}")
     print(f"✓ Exclus (terrain/commerce/etc.) : {skipped}")
     print(f"✓ Nouveaux : {added} | Supprimés : {removed}")
     print(f"✓ Fichier : {OUT_JSON}")
@@ -276,7 +358,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Import projets Al Omrane pour bldimo")
     parser.add_argument("--max-pages", type=int, default=None)
     parser.add_argument("--all", action="store_true")
-    parser.add_argument("--delay", type=float, default=0.8)
+    parser.add_argument("--delay", type=float, default=0.7)
+    parser.add_argument("--enrich-images", action="store_true",
+                        help="Si pas d'image liste, ouvrir la fiche pour og:image")
     args = parser.parse_args()
 
     max_pages = args.max_pages
@@ -284,7 +368,7 @@ def main() -> None:
         max_pages = 2
         print("Mode test : 2 pages. Utilisez --all pour tout importer.")
 
-    run(max_pages=max_pages if not args.all else None, delay=args.delay)
+    run(max_pages=max_pages if not args.all else None, delay=args.delay, enrich_images=args.enrich_images)
 
 
 if __name__ == "__main__":
