@@ -18,8 +18,8 @@ import { getProjects, Project } from '../src/data/projects';
 import { Colors } from '../src/constants/theme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_W - 48;
-const CARD_MARGIN = 12;
+const CARD_WIDTH = SCREEN_W - 40;
+const CARD_MARGIN = 10;
 
 const ALL_PROJECTS = getProjects();
 
@@ -32,7 +32,6 @@ function formatDh(n: number) {
   return n.toLocaleString('fr-MA');
 }
 
-/** Surface / prix uniquement si données réelles ; sinon rien */
 function ProjectMeta({ project }: { project: Project }) {
   const hasSurface = project.surfaceMin != null || project.surfaceMax != null;
   const hasPrice = project.priceMin != null || project.priceMax != null;
@@ -194,7 +193,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                         resizeMode="cover"
                       />
                     ) : (
-                      <Ionicons name="home" size={44} color="rgba(255,255,255,0.9)" />
+                      <Ionicons name="home" size={52} color="rgba(255,255,255,0.9)" />
                     )}
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{typeLabel(project.type)}</Text>
@@ -305,7 +304,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent', paddingTop: 10 },
+  container: { flex: 1, backgroundColor: 'transparent', paddingTop: 4 },
   title: {
     fontSize: 20,
     fontWeight: '800',
@@ -316,14 +315,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textLight,
     paddingHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 6,
     marginTop: 2,
   },
   filterLine: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   dropBtn: {
     flexDirection: 'row',
@@ -338,7 +337,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 90, marginRight: 4 },
-  scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
+  scrollContent: { paddingHorizontal: 10, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
     backgroundColor: Colors.card,
@@ -349,7 +348,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   imageArea: {
-    height: 150,
+    height: 210,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -377,15 +376,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  body: { padding: 12 },
+  body: { padding: 14 },
   cityText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.secondary,
     fontWeight: '700',
     marginBottom: 2,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.text,
     marginBottom: 4,
@@ -398,7 +397,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   metaPrice: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.primary,
   },
@@ -408,7 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 12,
   },
   simButtonText: { color: '#fff', fontSize: 15, fontWeight: '700', marginLeft: 8 },
