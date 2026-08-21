@@ -42,12 +42,52 @@ export default function App() {
         <View style={styles.brandingContainer}>
           <Text style={styles.brandBld}>bld</Text>
 
-          {/* immo : courbe smile légère, lettres lisibles */}
+          {/* immo déformé en arc sourire : i et o hauts, mm bas */}
           <View style={styles.immoSmile}>
-            <Text style={[styles.immoLetter, { transform: [{ rotate: '-12deg' }], marginTop: 0 }]}>i</Text>
-            <Text style={[styles.immoLetter, { transform: [{ rotate: '-4deg' }], marginTop: 5 }]}>m</Text>
-            <Text style={[styles.immoLetter, { transform: [{ rotate: '4deg' }], marginTop: 5 }]}>m</Text>
-            <Text style={[styles.immoLetter, { transform: [{ rotate: '12deg' }], marginTop: 0 }]}>o</Text>
+            <Text
+              style={[
+                styles.immoLetter,
+                {
+                  marginTop: 0,
+                  transform: [{ rotate: '-18deg' }, { translateY: -2 }],
+                },
+              ]}
+            >
+              i
+            </Text>
+            <Text
+              style={[
+                styles.immoLetter,
+                {
+                  marginTop: 11,
+                  transform: [{ rotate: '-6deg' }],
+                },
+              ]}
+            >
+              m
+            </Text>
+            <Text
+              style={[
+                styles.immoLetter,
+                {
+                  marginTop: 11,
+                  transform: [{ rotate: '6deg' }],
+                },
+              ]}
+            >
+              m
+            </Text>
+            <Text
+              style={[
+                styles.immoLetter,
+                {
+                  marginTop: 0,
+                  transform: [{ rotate: '18deg' }, { translateY: -2 }],
+                },
+              ]}
+            >
+              o
+            </Text>
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -115,15 +155,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 4,
-    height: 26,
+    marginTop: 2,
+    marginBottom: 6,
+    height: 32,
   },
   immoLetter: {
     color: FLAG_RED,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
-    width: 14,
+    width: 16,
     textAlign: 'center',
     includeFontPadding: false,
   },
