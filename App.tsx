@@ -40,16 +40,17 @@ export default function App() {
         <AdBanner />
 
         <View style={styles.brandingContainer}>
-          {/* Mot complet style Amazon : bld + immo + smile en dessous */}
-          <View style={styles.logoWord}>
-            <Text style={styles.brandBld}>bld</Text>
-            <Text style={styles.brandImmo}>immo</Text>
-          </View>
+          <View style={styles.logoBlock}>
+            <View style={styles.logoWord}>
+              <Text style={styles.brandBld}>bld</Text>
+              <Text style={styles.brandImmo}>immo</Text>
+            </View>
 
-          {/* Arc sourire façon Amazon (sous le mot, de b à o) */}
-          <View style={styles.smileWrap}>
-            <View style={styles.smileArc} />
-            <View style={styles.smileArrow} />
+            {/* Smile Amazon : arc + pointe flèche à droite */}
+            <View style={styles.smileRow}>
+              <View style={styles.smileCurve} />
+              <Text style={styles.smileTip}>›</Text>
+            </View>
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -98,66 +99,56 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 44,
   },
   brandingContainer: {
-    paddingTop: 6,
-    paddingBottom: 2,
+    paddingTop: 8,
+    paddingBottom: 4,
     paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  logoBlock: {
+    alignItems: 'center',
   },
   logoWord: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'center',
+    alignItems: 'center',
   },
   brandBld: {
     color: FLAG_GREEN,
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     includeFontPadding: false,
   },
   brandImmo: {
     color: FLAG_RED,
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     includeFontPadding: false,
   },
-  smileWrap: {
-    width: 130,
+  smileRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginTop: -4,
+    marginBottom: 6,
+    width: 148,
+    height: 20,
+  },
+  smileCurve: {
+    flex: 1,
     height: 18,
-    marginTop: -2,
-    marginBottom: 4,
-    alignSelf: 'center',
-    position: 'relative',
-  },
-  /* Demi-cercle = sourire Amazon */
-  smileArc: {
-    position: 'absolute',
-    left: 8,
-    right: 18,
-    top: 0,
-    height: 16,
-    borderBottomWidth: 3,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
+    borderBottomWidth: 3.5,
     borderColor: FLAG_RED,
-    borderBottomLeftRadius: 60,
-    borderBottomRightRadius: 60,
-    backgroundColor: 'transparent',
+    borderBottomLeftRadius: 80,
+    borderBottomRightRadius: 80,
+    marginRight: -2,
   },
-  /* Petite flèche au bout du smile (comme Amazon) */
-  smileArrow: {
-    position: 'absolute',
-    right: 10,
-    bottom: 4,
-    width: 10,
-    height: 10,
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-    borderColor: FLAG_RED,
-    transform: [{ rotate: '45deg' }],
+  smileTip: {
+    color: FLAG_RED,
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: -2,
+    marginLeft: -4,
+    lineHeight: 22,
   },
   brandingSubtitle: {
     color: '#64748B',
