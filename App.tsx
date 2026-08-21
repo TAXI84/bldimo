@@ -40,54 +40,16 @@ export default function App() {
         <AdBanner />
 
         <View style={styles.brandingContainer}>
-          <Text style={styles.brandBld}>bld</Text>
+          {/* Mot complet style Amazon : bld + immo + smile en dessous */}
+          <View style={styles.logoWord}>
+            <Text style={styles.brandBld}>bld</Text>
+            <Text style={styles.brandImmo}>immo</Text>
+          </View>
 
-          {/* immo déformé en arc sourire : i et o hauts, mm bas */}
-          <View style={styles.immoSmile}>
-            <Text
-              style={[
-                styles.immoLetter,
-                {
-                  marginTop: 0,
-                  transform: [{ rotate: '-18deg' }, { translateY: -2 }],
-                },
-              ]}
-            >
-              i
-            </Text>
-            <Text
-              style={[
-                styles.immoLetter,
-                {
-                  marginTop: 11,
-                  transform: [{ rotate: '-6deg' }],
-                },
-              ]}
-            >
-              m
-            </Text>
-            <Text
-              style={[
-                styles.immoLetter,
-                {
-                  marginTop: 11,
-                  transform: [{ rotate: '6deg' }],
-                },
-              ]}
-            >
-              m
-            </Text>
-            <Text
-              style={[
-                styles.immoLetter,
-                {
-                  marginTop: 0,
-                  transform: [{ rotate: '18deg' }, { translateY: -2 }],
-                },
-              ]}
-            >
-              o
-            </Text>
+          {/* Arc sourire façon Amazon (sous le mot, de b à o) */}
+          <View style={styles.smileWrap}>
+            <View style={styles.smileArc} />
+            <View style={styles.smileArrow} />
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -136,36 +98,66 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 44,
   },
   brandingContainer: {
-    paddingTop: 4,
+    paddingTop: 6,
     paddingBottom: 2,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logoWord: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+  },
   brandBld: {
     color: FLAG_GREEN,
-    fontSize: 34,
+    fontSize: 36,
     fontWeight: '900',
-    letterSpacing: 3,
-    lineHeight: 36,
-    textAlign: 'center',
+    letterSpacing: 1,
     includeFontPadding: false,
   },
-  immoSmile: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginTop: 2,
-    marginBottom: 6,
-    height: 32,
-  },
-  immoLetter: {
+  brandImmo: {
     color: FLAG_RED,
-    fontSize: 18,
-    fontWeight: '800',
-    width: 16,
-    textAlign: 'center',
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: 1,
     includeFontPadding: false,
+  },
+  smileWrap: {
+    width: 130,
+    height: 18,
+    marginTop: -2,
+    marginBottom: 4,
+    alignSelf: 'center',
+    position: 'relative',
+  },
+  /* Demi-cercle = sourire Amazon */
+  smileArc: {
+    position: 'absolute',
+    left: 8,
+    right: 18,
+    top: 0,
+    height: 16,
+    borderBottomWidth: 3,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderColor: FLAG_RED,
+    borderBottomLeftRadius: 60,
+    borderBottomRightRadius: 60,
+    backgroundColor: 'transparent',
+  },
+  /* Petite flèche au bout du smile (comme Amazon) */
+  smileArrow: {
+    position: 'absolute',
+    right: 10,
+    bottom: 4,
+    width: 10,
+    height: 10,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderColor: FLAG_RED,
+    transform: [{ rotate: '45deg' }],
   },
   brandingSubtitle: {
     color: '#64748B',
