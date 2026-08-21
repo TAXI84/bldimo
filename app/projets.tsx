@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,10 @@ import AdBanner from '../src/components/AdBanner';
 import ZelligeAccent from '../src/components/ZelligeAccent';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_W - 48;
-const CARD_MARGIN = 12;
+/** Une carte = quasi plein écran → un seul bouton Simulation visible */
+const SIDE_PAD = 24;
+const CARD_WIDTH = SCREEN_W - SIDE_PAD * 2;
+const SNAP = CARD_WIDTH + 12;
 
 const ALL_PROJECTS = getProjects();
 
@@ -34,22 +36,16 @@ function formatDh(n: number) {
   return n.toLocaleString('fr-MA');
 }
 
-/** Lignes surface / prix uniquement si données réelles présentes */
 function ProjectMeta({ project }: { project: Project }) {
-  const hasSurface =
-    project.surfaceMin != null || project.surfaceMax != null;
+  const hasSurface = project.surfaceMin != null || project.surfaceMax != null;
   const hasPrice = project.priceMin != null || project.priceMax != null;
-
-  // Ne rien afficher si aucun des deux
   if (!hasSurface && !hasPrice) return null;
 
   const surfaceLine = (() => {
     if (!hasSurface) return null;
     const a = project.surfaceMin;
     const b = project.surfaceMax;
-    if (a != null && b != null && a !== b) {
-      return `de ${a} m² à ${b} m²`;
-    }
+    if (a != null && b != null && a !== b) return `de ${a} m² à ${b} m²`;
     const v = a != null ? a : b;
     return v != null ? `${v} m²` : null;
   })();
@@ -58,7 +54,6 @@ function ProjectMeta({ project }: { project: Project }) {
     if (!hasPrice) return null;
     const a = project.priceMin;
     const b = project.priceMax;
-    // Ne pas afficher un faux "Jusqu'à 700000" si c'est juste le plafond filtre sans min réel
     if (a == null && b != null && b >= 700000) return null;
     if (a != null && b != null && a !== b) {
       return `de ${formatDh(a)} DH à ${formatDh(b)} DH`;
@@ -84,6 +79,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   const [cityOpen, setCityOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+  const indexRef = useRef(0);
 
   const cities = useMemo(() => {
     const list: string[] = [];
@@ -104,13 +100,32 @@ export default function ProjetsScreen({ onSimulate }: Props) {
     [city, type]
   );
 
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const x = e.nativeEvent.contentOffset.x;
-    const i = Math.round(x / (CARD_WIDTH + CARD_MARGIN * 2));
-    if (i >= 0 && i < filtered.length) setIndex(i);
-  };
+  const onScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const x = e.nativeEvent.contentOffset.x;
+      const i = Math.round(x / SNAP);
+      if (i >= 0 && i < filtered.length && i !== indexRef.current) {
+        indexRef.current = i;
+        setIndex(i);
+      }
+    },
+    [filtered.length]
+  );
+
+  const onMomentumEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const x = e.nativeEvent.contentOffset.x;
+      const i = Math.max(0, Math.min(filtered.length - 1, Math.round(x / SNAP)));
+      indexRef.current = i;
+      setIndex(i);
+      // Snap exact pour éviter le chevauchement de 2 cartes
+      scrollRef.current?.scrollTo({ x: i * SNAP, animated: true });
+    },
+    [filtered.length]
+  );
 
   const resetScroll = () => {
+    indexRef.current = 0;
     setIndex(0);
     try {
       scrollRef.current?.scrollTo({ x: 0, animated: false });
@@ -139,7 +154,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         {`≤ 700 000 DH • ${ALL_PROJECTS.length} projets • Al Omrane`}
       </Text>
 
-      {/* Filtres Ville + Type uniquement */}
       <View style={styles.filterLine}>
         <TouchableOpacity style={styles.dropBtn} onPress={() => setCityOpen(true)}>
           <Text style={styles.dropText} numberOfLines={1}>
@@ -153,7 +167,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         </TouchableOpacity>
       </View>
 
-      {/* Motif zellige à la place de la barre prix */}
       <View style={styles.zelligeStrip}>
         <View style={styles.zelligeStripSide}>
           <ZelligeAccent />
@@ -189,10 +202,14 @@ export default function ProjetsScreen({ onSimulate }: Props) {
             ref={scrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
+            pagingEnabled={false}
+            snapToInterval={SNAP}
+            snapToAlignment="start"
+            disableIntervalMomentum
             decelerationRate="fast"
             contentContainerStyle={styles.scrollContent}
             onScroll={onScroll}
+            onMomentumScrollEnd={onMomentumEnd}
             scrollEventThrottle={16}
           >
             {filtered.map((project) => (
@@ -230,6 +247,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                     <ProjectMeta project={project} />
                   </View>
                 </TouchableOpacity>
+                {/* Bouton DANS la largeur de la carte = 1 seul visible */}
                 <TouchableOpacity
                   style={styles.simButton}
                   activeOpacity={0.85}
@@ -361,12 +379,18 @@ const styles = StyleSheet.create({
     maxWidth: 140,
     marginHorizontal: 6,
   },
-  dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 100, marginRight: 4 },
+  dropText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.text,
+    maxWidth: 100,
+    marginRight: 4,
+  },
   zelligeStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 8,
     height: 20,
   },
   zelligeStripSide: { flex: 1, height: 5, overflow: 'hidden', borderRadius: 2 },
@@ -380,8 +404,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   diamondInner: { width: 5, height: 5, backgroundColor: Colors.primary },
-  scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
-  cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
+  scrollContent: {
+    paddingHorizontal: SIDE_PAD - 6,
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
+  cardWrap: {
+    width: CARD_WIDTH,
+    marginRight: 12,
+  },
   card: {
     backgroundColor: Colors.card,
     borderRadius: 16,
@@ -452,6 +483,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderRadius: 12,
+    width: '100%',
   },
   simButtonText: { color: '#fff', fontSize: 15, fontWeight: '700', marginLeft: 8 },
   counter: {
