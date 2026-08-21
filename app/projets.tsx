@@ -72,16 +72,27 @@ function ProjectMeta({ project }: { project: Project }) {
   );
 }
 
+/** Bandeau zellige entre Simulation et compteur */
 function MotifStrip() {
   return (
-    <View style={styles.motifStrip}>
-      <Text style={styles.motifSym}>✦</Text>
-      <View style={styles.motifLine} />
-      <Text style={styles.motifSym}>◇</Text>
-      <View style={styles.motifDot} />
-      <Text style={styles.motifSym}>◇</Text>
-      <View style={styles.motifLine} />
-      <Text style={styles.motifSym}>✦</Text>
+    <View style={styles.motifWrap}>
+      <View style={styles.motifStrip}>
+        <View style={styles.motifDiamond} />
+        <View style={styles.motifLine} />
+        <View style={styles.motifStar}>
+          <View style={styles.motifStarOuter} />
+          <View style={styles.motifStarCore} />
+        </View>
+        <View style={styles.motifLine} />
+        <View style={[styles.motifDiamond, styles.motifDiamondRed]} />
+      </View>
+      <View style={styles.motifRow}>
+        {['✦', '◇', '✦', '◇', '✦', '◇', '✦'].map((s, i) => (
+          <Text key={i} style={[styles.motifChar, i % 2 === 0 ? styles.motifCharGreen : styles.motifCharRed]}>
+            {s}
+          </Text>
+        ))}
+      </View>
     </View>
   );
 }
@@ -160,7 +171,7 @@ export default function ProjetsScreen({ onSimulate }: Props) {
           <Ionicons name="chevron-down" size={14} color={Colors.textLight} />
         </TouchableOpacity>
         <View style={styles.surfaceChip}>
-          <Text style={styles.surfaceChipText}>de 30 m² à 85 m²</Text>
+          <Text style={styles.surfaceChipText}>35 m² – 80 m²</Text>
         </View>
       </View>
 
@@ -445,32 +456,64 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   simButtonText: { color: '#fff', fontSize: 15, fontWeight: '700', marginLeft: 8 },
+  motifWrap: {
+    marginTop: 12,
+    marginBottom: 6,
+    paddingHorizontal: 24,
+  },
   motifStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
-    marginBottom: 4,
-    paddingHorizontal: 40,
   },
   motifLine: {
     flex: 1,
     height: 1.5,
     backgroundColor: '#0D9488',
     marginHorizontal: 8,
-    opacity: 0.5,
+    opacity: 0.55,
   },
-  motifSym: {
-    color: '#006233',
-    fontSize: 12,
+  motifDiamond: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#006233',
+    transform: [{ rotate: '45deg' }],
   },
-  motifDot: {
+  motifDiamondRed: {
+    backgroundColor: '#C1272D',
+  },
+  motifStar: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  motifStarOuter: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: '#006233',
+  },
+  motifStarCore: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#C1272D',
+  },
+  motifRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  motifChar: {
+    fontSize: 11,
     marginHorizontal: 6,
   },
+  motifCharGreen: { color: '#006233' },
+  motifCharRed: { color: '#C1272D' },
   counter: {
     textAlign: 'center',
     marginTop: 2,

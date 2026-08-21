@@ -1,18 +1,20 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
-/** Bandeau zellige centré : losange | ligne | rosace | ligne | losange */
+/** Bandeau zellige parfaitement centré : ligne | rosace | ligne */
 export default function ZelligeAccent() {
   return (
     <View style={styles.container}>
-      <Text style={styles.diamond}>◇</Text>
       <View style={styles.line} />
-      <View style={styles.rosace}>
-        <View style={styles.rosaceOuter} />
-        <View style={styles.rosaceMid} />
-        <View style={styles.rosaceCore} />
+      <View style={styles.centerGroup}>
+        <View style={styles.diamondLeft} />
+        <View style={styles.rosace}>
+          <View style={styles.rosaceOuter} />
+          <View style={styles.rosaceMid} />
+          <View style={styles.rosaceCore} />
+        </View>
+        <View style={styles.diamondRight} />
       </View>
       <View style={styles.line} />
-      <Text style={styles.diamond}>◇</Text>
     </View>
   );
 }
@@ -23,23 +25,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingHorizontal: 28,
-    height: 36,
+    paddingHorizontal: 32,
+    height: 32,
   },
   line: {
     flex: 1,
     height: 2,
     backgroundColor: '#0D9488',
+    borderRadius: 1,
+  },
+  centerGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginHorizontal: 10,
   },
-  diamond: {
-    color: '#0D9488',
-    fontSize: 14,
-    fontWeight: '700',
+  diamondLeft: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#006233',
+    transform: [{ rotate: '45deg' }],
+    marginRight: 8,
+  },
+  diamondRight: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#C1272D',
+    transform: [{ rotate: '45deg' }],
+    marginLeft: 8,
   },
   rosace: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
