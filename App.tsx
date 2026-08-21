@@ -11,6 +11,10 @@ import AdBanner from './src/components/AdBanner';
 
 type Tab = 'projets' | 'marocain' | 'mre' | 'etranger';
 
+/** Vert étoile & rouge drapeau Maroc */
+const FLAG_GREEN = '#006233';
+const FLAG_RED = '#C1272D';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('projets');
 
@@ -37,7 +41,8 @@ export default function App() {
         <AdBanner />
 
         <View style={styles.brandingContainer}>
-          <Text style={styles.brandingTitle}>bldimo</Text>
+          <Text style={styles.brandBld}>bld</Text>
+          <Text style={styles.brandImo}>imo</Text>
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
         </View>
 
@@ -107,17 +112,28 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 44,
   },
   brandingContainer: {
-    paddingVertical: 12,
+    paddingTop: 6,
+    paddingBottom: 4,
     paddingHorizontal: 20,
     alignItems: 'center',
   },
-  brandingTitle: {
-    color: '#005C9E',
-    fontSize: 36,
+  brandBld: {
+    color: FLAG_GREEN,
+    fontSize: 34,
     fontWeight: '900',
-    letterSpacing: 0.5,
-    marginBottom: 2,
+    letterSpacing: 2,
+    lineHeight: 36,
     textAlign: 'center',
+  },
+  brandImo: {
+    color: FLAG_RED,
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: 2,
+    lineHeight: 36,
+    textAlign: 'center',
+    marginTop: -4,
+    marginBottom: 4,
   },
   brandingSubtitle: {
     color: '#64748B',
