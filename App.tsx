@@ -11,7 +11,6 @@ import AdBanner from './src/components/AdBanner';
 
 type Tab = 'projets' | 'marocain' | 'mre' | 'etranger';
 
-/** Vert étoile & rouge drapeau Maroc */
 const FLAG_GREEN = '#006233';
 const FLAG_RED = '#C1272D';
 
@@ -43,12 +42,12 @@ export default function App() {
         <View style={styles.brandingContainer}>
           <Text style={styles.brandBld}>bld</Text>
 
-          {/* Lettres immo courbées en smile sous bld */}
+          {/* immo : courbe smile légère, lettres lisibles */}
           <View style={styles.immoSmile}>
-            <Text style={[styles.immoLetter, styles.immoI]}>i</Text>
-            <Text style={[styles.immoLetter, styles.immoM1]}>m</Text>
-            <Text style={[styles.immoLetter, styles.immoM2]}>m</Text>
-            <Text style={[styles.immoLetter, styles.immoO]}>o</Text>
+            <Text style={[styles.immoLetter, { transform: [{ rotate: '-12deg' }], marginTop: 0 }]}>i</Text>
+            <Text style={[styles.immoLetter, { transform: [{ rotate: '-4deg' }], marginTop: 5 }]}>m</Text>
+            <Text style={[styles.immoLetter, { transform: [{ rotate: '4deg' }], marginTop: 5 }]}>m</Text>
+            <Text style={[styles.immoLetter, { transform: [{ rotate: '12deg' }], marginTop: 0 }]}>o</Text>
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -60,30 +59,10 @@ export default function App() {
       <View style={styles.contentWrapper}>{renderScreen()}</View>
 
       <View style={styles.tabBar}>
-        <TabButton
-          label="Projets"
-          icon="business"
-          active={activeTab === 'projets'}
-          onPress={() => setActiveTab('projets')}
-        />
-        <TabButton
-          label="Marocain"
-          icon="map"
-          active={activeTab === 'marocain'}
-          onPress={() => setActiveTab('marocain')}
-        />
-        <TabButton
-          label="MRE"
-          icon="airplane"
-          active={activeTab === 'mre'}
-          onPress={() => setActiveTab('mre')}
-        />
-        <TabButton
-          label="Étranger"
-          icon="globe"
-          active={activeTab === 'etranger'}
-          onPress={() => setActiveTab('etranger')}
-        />
+        <TabButton label="Projets" icon="business" active={activeTab === 'projets'} onPress={() => setActiveTab('projets')} />
+        <TabButton label="Marocain" icon="map" active={activeTab === 'marocain'} onPress={() => setActiveTab('marocain')} />
+        <TabButton label="MRE" icon="airplane" active={activeTab === 'mre'} onPress={() => setActiveTab('mre')} />
+        <TabButton label="Étranger" icon="globe" active={activeTab === 'etranger'} onPress={() => setActiveTab('etranger')} />
       </View>
     </View>
   );
@@ -110,10 +89,7 @@ function TabButton({
 }
 
 const styles = StyleSheet.create({
-  rootContainer: {
-    flex: 1,
-    backgroundColor: '#F7F4EE',
-  },
+  rootContainer: { flex: 1, backgroundColor: '#F7F4EE' },
   headerContainer: {
     backgroundColor: 'transparent',
     zIndex: 10,
@@ -139,32 +115,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    marginTop: -2,
-    marginBottom: 6,
-    height: 28,
+    marginTop: 0,
+    marginBottom: 4,
+    height: 26,
   },
   immoLetter: {
     color: FLAG_RED,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
+    width: 14,
+    textAlign: 'center',
     includeFontPadding: false,
-  },
-  /* Courbe smile : bords plus hauts, centre plus bas */
-  immoI: {
-    marginTop: 0,
-    marginRight: 1,
-  },
-  immoM1: {
-    marginTop: 7,
-    marginHorizontal: 1,
-  },
-  immoM2: {
-    marginTop: 7,
-    marginHorizontal: 1,
-  },
-  immoO: {
-    marginTop: 0,
-    marginLeft: 1,
   },
   brandingSubtitle: {
     color: '#64748B',
@@ -173,11 +134,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     textAlign: 'center',
   },
-  contentWrapper: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    zIndex: 1,
-  },
+  contentWrapper: { flex: 1, backgroundColor: 'transparent', zIndex: 1 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -191,22 +148,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  tabButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    position: 'relative',
-  },
-  tabLabel: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  tabLabelActive: {
-    color: '#005C9E',
-    fontWeight: '700',
-  },
+  tabButton: { flex: 1, alignItems: 'center', paddingVertical: 8, position: 'relative' },
+  tabLabel: { fontSize: 11, color: '#94A3B8', marginTop: 4, fontWeight: '500' },
+  tabLabelActive: { color: '#005C9E', fontWeight: '700' },
   activeIndicator: {
     position: 'absolute',
     bottom: 0,
