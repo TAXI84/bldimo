@@ -72,6 +72,20 @@ function ProjectMeta({ project }: { project: Project }) {
   );
 }
 
+function MotifStrip() {
+  return (
+    <View style={styles.motifStrip}>
+      <Text style={styles.motifSym}>✦</Text>
+      <View style={styles.motifLine} />
+      <Text style={styles.motifSym}>◇</Text>
+      <View style={styles.motifDot} />
+      <Text style={styles.motifSym}>◇</Text>
+      <View style={styles.motifLine} />
+      <Text style={styles.motifSym}>✦</Text>
+    </View>
+  );
+}
+
 export default function ProjetsScreen({ onSimulate }: Props) {
   const [index, setIndex] = useState(0);
   const [city, setCity] = useState('all');
@@ -145,6 +159,9 @@ export default function ProjetsScreen({ onSimulate }: Props) {
           <Text style={styles.dropText}>{typeLabel(type)}</Text>
           <Ionicons name="chevron-down" size={14} color={Colors.textLight} />
         </TouchableOpacity>
+        <View style={styles.surfaceChip}>
+          <Text style={styles.surfaceChipText}>de 30 m² à 85 m²</Text>
+        </View>
       </View>
 
       {filtered.length === 0 ? (
@@ -219,6 +236,9 @@ export default function ProjetsScreen({ onSimulate }: Props) {
               </View>
             ))}
           </ScrollView>
+
+          <MotifStrip />
+
           <Text style={styles.counter}>
             {Math.min(index + 1, filtered.length)} / {filtered.length}
           </Text>
@@ -323,6 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     marginBottom: 6,
+    flexWrap: 'wrap',
   },
   dropBtn: {
     flexDirection: 'row',
@@ -333,10 +354,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: Colors.border,
-    maxWidth: 120,
+    maxWidth: 110,
     marginRight: 8,
   },
-  dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 90, marginRight: 4 },
+  dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 80, marginRight: 4 },
+  surfaceChip: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  surfaceChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#006233',
+  },
   scrollContent: { paddingHorizontal: 10, paddingTop: 4 },
   cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
@@ -411,9 +445,35 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   simButtonText: { color: '#fff', fontSize: 15, fontWeight: '700', marginLeft: 8 },
+  motifStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 4,
+    paddingHorizontal: 40,
+  },
+  motifLine: {
+    flex: 1,
+    height: 1.5,
+    backgroundColor: '#0D9488',
+    marginHorizontal: 8,
+    opacity: 0.5,
+  },
+  motifSym: {
+    color: '#006233',
+    fontSize: 12,
+  },
+  motifDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#C1272D',
+    marginHorizontal: 6,
+  },
   counter: {
     textAlign: 'center',
-    marginTop: 6,
+    marginTop: 2,
     marginBottom: 4,
     fontSize: 12,
     color: Colors.textMuted,
