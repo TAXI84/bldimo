@@ -35,7 +35,20 @@ export default function App() {
         <Text style={styles.headerSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
       </View>
 
-      <ZelligeAccent />
+      {/* Ligne zellige centrée avec motif au milieu */}
+      <View style={styles.zelligeWrap}>
+        <View style={styles.zelligeSide}>
+          <ZelligeAccent />
+        </View>
+        <View style={styles.zelligeCenter}>
+          <View style={styles.diamondOuter}>
+            <View style={styles.diamondInner} />
+          </View>
+        </View>
+        <View style={styles.zelligeSide}>
+          <ZelligeAccent />
+        </View>
+      </View>
       <View style={styles.zelligeLine2} />
 
       <View style={styles.content}>{renderScreen()}</View>
@@ -95,25 +108,56 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: Colors.primary,
     paddingTop: Platform.OS === 'android' ? 36 : 46,
-    paddingBottom: 12,
+    paddingBottom: 14,
     paddingHorizontal: 20,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
+    textAlign: 'center',
   },
   headerSubtitle: {
     color: 'rgba(255,255,255,0.85)',
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 3,
+    textAlign: 'center',
+  },
+  zelligeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    height: 18,
+  },
+  zelligeSide: {
+    flex: 1,
+    height: 5,
+    overflow: 'hidden',
+  },
+  zelligeCenter: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diamondOuter: {
+    width: 14,
+    height: 14,
+    backgroundColor: Colors.secondary,
+    transform: [{ rotate: '45deg' }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diamondInner: {
+    width: 6,
+    height: 6,
+    backgroundColor: Colors.primary,
   },
   zelligeLine2: {
     height: 3,
     backgroundColor: Colors.secondary,
-    opacity: 0.7,
+    opacity: 0.75,
   },
   content: { flex: 1 },
   tabBar: {
