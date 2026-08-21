@@ -40,17 +40,9 @@ export default function App() {
         <AdBanner />
 
         <View style={styles.brandingContainer}>
-          <View style={styles.logoBlock}>
-            <View style={styles.logoWord}>
-              <Text style={styles.brandBld}>bld</Text>
-              <Text style={styles.brandImmo}>immo</Text>
-            </View>
-
-            {/* Smile Amazon : arc + pointe flèche à droite */}
-            <View style={styles.smileRow}>
-              <View style={styles.smileCurve} />
-              <Text style={styles.smileTip}>›</Text>
-            </View>
+          <View style={styles.logoWord}>
+            <Text style={styles.brandBld}>bld</Text>
+            <Text style={styles.brandImmo}>immo</Text>
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -104,12 +96,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
   },
-  logoBlock: {
-    alignItems: 'center',
-  },
   logoWord: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
   brandBld: {
     color: FLAG_GREEN,
@@ -124,31 +114,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
     includeFontPadding: false,
-  },
-  smileRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginTop: -4,
-    marginBottom: 6,
-    width: 148,
-    height: 20,
-  },
-  smileCurve: {
-    flex: 1,
-    height: 18,
-    borderBottomWidth: 3.5,
-    borderColor: FLAG_RED,
-    borderBottomLeftRadius: 80,
-    borderBottomRightRadius: 80,
-    marginRight: -2,
-  },
-  smileTip: {
-    color: FLAG_RED,
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: -2,
-    marginLeft: -4,
-    lineHeight: 22,
   },
   brandingSubtitle: {
     color: '#64748B',
