@@ -43,10 +43,12 @@ export default function App() {
         <View style={styles.brandingContainer}>
           <Text style={styles.brandBld}>bld</Text>
 
-          {/* Smile Amazon-style sous bld + immo plus petit */}
-          <View style={styles.smileBlock}>
-            <View style={styles.smileArc} />
-            <Text style={styles.brandImmo}>immo</Text>
+          {/* Lettres immo courbées en smile sous bld */}
+          <View style={styles.immoSmile}>
+            <Text style={[styles.immoLetter, styles.immoI]}>i</Text>
+            <Text style={[styles.immoLetter, styles.immoM1]}>m</Text>
+            <Text style={[styles.immoLetter, styles.immoM2]}>m</Text>
+            <Text style={[styles.immoLetter, styles.immoO]}>o</Text>
           </View>
 
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
@@ -133,32 +135,36 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     includeFontPadding: false,
   },
-  smileBlock: {
-    alignItems: 'center',
+  immoSmile: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
     marginTop: -2,
-    marginBottom: 4,
-    width: 110,
+    marginBottom: 6,
+    height: 28,
   },
-  smileArc: {
-    width: 100,
-    height: 14,
-    borderBottomWidth: 2.5,
-    borderLeftWidth: 2.5,
-    borderRightWidth: 2.5,
-    borderColor: FLAG_RED,
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    backgroundColor: 'transparent',
-    marginBottom: -2,
-  },
-  brandImmo: {
+  immoLetter: {
     color: FLAG_RED,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
-    letterSpacing: 4,
-    textAlign: 'center',
-    marginTop: 0,
     includeFontPadding: false,
+  },
+  /* Courbe smile : bords plus hauts, centre plus bas */
+  immoI: {
+    marginTop: 0,
+    marginRight: 1,
+  },
+  immoM1: {
+    marginTop: 7,
+    marginHorizontal: 1,
+  },
+  immoM2: {
+    marginTop: 7,
+    marginHorizontal: 1,
+  },
+  immoO: {
+    marginTop: 0,
+    marginLeft: 1,
   },
   brandingSubtitle: {
     color: '#64748B',
