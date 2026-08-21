@@ -42,7 +42,13 @@ export default function App() {
 
         <View style={styles.brandingContainer}>
           <Text style={styles.brandBld}>bld</Text>
-          <Text style={styles.brandImo}>imo</Text>
+
+          {/* Smile Amazon-style sous bld + immo plus petit */}
+          <View style={styles.smileBlock}>
+            <View style={styles.smileArc} />
+            <Text style={styles.brandImmo}>immo</Text>
+          </View>
+
           <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
         </View>
 
@@ -120,22 +126,38 @@ const styles = StyleSheet.create({
   },
   brandBld: {
     color: FLAG_GREEN,
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
     letterSpacing: 3,
-    lineHeight: 34,
+    lineHeight: 36,
     textAlign: 'center',
     includeFontPadding: false,
   },
-  brandImo: {
-    color: FLAG_RED,
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: 3,
-    lineHeight: 34,
-    textAlign: 'center',
+  smileBlock: {
+    alignItems: 'center',
     marginTop: -2,
-    marginBottom: 2,
+    marginBottom: 4,
+    width: 110,
+  },
+  smileArc: {
+    width: 100,
+    height: 14,
+    borderBottomWidth: 2.5,
+    borderLeftWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: FLAG_RED,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+    backgroundColor: 'transparent',
+    marginBottom: -2,
+  },
+  brandImmo: {
+    color: FLAG_RED,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 4,
+    textAlign: 'center',
+    marginTop: 0,
     includeFontPadding: false,
   },
   brandingSubtitle: {
