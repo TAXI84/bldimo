@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -16,14 +16,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { getProjects, Project } from '../src/data/projects';
 import { Colors } from '../src/constants/theme';
-import AdBanner from '../src/components/AdBanner';
-import ZelligeAccent from '../src/components/ZelligeAccent';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-/** Une carte = quasi plein écran → un seul bouton Simulation visible */
-const SIDE_PAD = 24;
-const CARD_WIDTH = SCREEN_W - SIDE_PAD * 2;
-const SNAP = CARD_WIDTH + 12;
+const CARD_WIDTH = SCREEN_W - 48;
+const CARD_MARGIN = 12;
 
 const ALL_PROJECTS = getProjects();
 
@@ -36,31 +32,36 @@ function formatDh(n: number) {
   return n.toLocaleString('fr-MA');
 }
 
+/** Surface / prix uniquement si données réelles ; sinon rien */
 function ProjectMeta({ project }: { project: Project }) {
   const hasSurface = project.surfaceMin != null || project.surfaceMax != null;
   const hasPrice = project.priceMin != null || project.priceMax != null;
   if (!hasSurface && !hasPrice) return null;
 
-  const surfaceLine = (() => {
-    if (!hasSurface) return null;
+  let surfaceLine: string | null = null;
+  if (hasSurface) {
     const a = project.surfaceMin;
     const b = project.surfaceMax;
-    if (a != null && b != null && a !== b) return `de ${a} m² à ${b} m²`;
-    const v = a != null ? a : b;
-    return v != null ? `${v} m²` : null;
-  })();
+    if (a != null && b != null && a !== b) surfaceLine = `de ${a} m² à ${b} m²`;
+    else {
+      const v = a != null ? a : b;
+      if (v != null) surfaceLine = `${v} m²`;
+    }
+  }
 
-  const priceLine = (() => {
-    if (!hasPrice) return null;
+  let priceLine: string | null = null;
+  if (hasPrice) {
     const a = project.priceMin;
     const b = project.priceMax;
-    if (a == null && b != null && b >= 700000) return null;
-    if (a != null && b != null && a !== b) {
-      return `de ${formatDh(a)} DH à ${formatDh(b)} DH`;
+    if (a == null && b != null && b >= 700000) {
+      priceLine = null;
+    } else if (a != null && b != null && a !== b) {
+      priceLine = `de ${formatDh(a)} DH à ${formatDh(b)} DH`;
+    } else {
+      const v = a != null ? a : b;
+      if (v != null) priceLine = `${formatDh(v)} DH`;
     }
-    const v = a != null ? a : b;
-    return v != null ? `${formatDh(v)} DH` : null;
-  })();
+  }
 
   if (!surfaceLine && !priceLine) return null;
 
@@ -79,7 +80,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
   const [cityOpen, setCityOpen] = useState(false);
   const [typeOpen, setTypeOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
-  const indexRef = useRef(0);
 
   const cities = useMemo(() => {
     const list: string[] = [];
@@ -100,32 +100,13 @@ export default function ProjetsScreen({ onSimulate }: Props) {
     [city, type]
   );
 
-  const onScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const x = e.nativeEvent.contentOffset.x;
-      const i = Math.round(x / SNAP);
-      if (i >= 0 && i < filtered.length && i !== indexRef.current) {
-        indexRef.current = i;
-        setIndex(i);
-      }
-    },
-    [filtered.length]
-  );
-
-  const onMomentumEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const x = e.nativeEvent.contentOffset.x;
-      const i = Math.max(0, Math.min(filtered.length - 1, Math.round(x / SNAP)));
-      indexRef.current = i;
-      setIndex(i);
-      // Snap exact pour éviter le chevauchement de 2 cartes
-      scrollRef.current?.scrollTo({ x: i * SNAP, animated: true });
-    },
-    [filtered.length]
-  );
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const x = e.nativeEvent.contentOffset.x;
+    const i = Math.round(x / (CARD_WIDTH + CARD_MARGIN * 2));
+    if (i >= 0 && i < filtered.length) setIndex(i);
+  };
 
   const resetScroll = () => {
-    indexRef.current = 0;
     setIndex(0);
     try {
       scrollRef.current?.scrollTo({ x: 0, animated: false });
@@ -167,22 +148,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.zelligeStrip}>
-        <View style={styles.zelligeStripSide}>
-          <ZelligeAccent />
-        </View>
-        <View style={styles.zelligeDiamond}>
-          <View style={styles.diamondOuter}>
-            <View style={styles.diamondInner} />
-          </View>
-        </View>
-        <View style={styles.zelligeStripSide}>
-          <ZelligeAccent />
-        </View>
-      </View>
-
-      <AdBanner />
-
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Aucun projet avec ces filtres</Text>
@@ -202,14 +167,11 @@ export default function ProjetsScreen({ onSimulate }: Props) {
             ref={scrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            pagingEnabled={false}
-            snapToInterval={SNAP}
-            snapToAlignment="start"
-            disableIntervalMomentum
+            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
             decelerationRate="fast"
+            disableIntervalMomentum
             contentContainerStyle={styles.scrollContent}
             onScroll={onScroll}
-            onMomentumScrollEnd={onMomentumEnd}
             scrollEventThrottle={16}
           >
             {filtered.map((project) => (
@@ -247,7 +209,6 @@ export default function ProjetsScreen({ onSimulate }: Props) {
                     <ProjectMeta project={project} />
                   </View>
                 </TouchableOpacity>
-                {/* Bouton DANS la largeur de la carte = 1 seul visible */}
                 <TouchableOpacity
                   style={styles.simButton}
                   activeOpacity={0.85}
@@ -344,75 +305,41 @@ export default function ProjetsScreen({ onSimulate }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, paddingTop: 10 },
+  container: { flex: 1, backgroundColor: 'transparent', paddingTop: 10 },
   title: {
     fontSize: 20,
     fontWeight: '800',
     color: Colors.primary,
     paddingHorizontal: 16,
-    textAlign: 'center',
   },
   subtitle: {
     fontSize: 12,
     color: Colors.textLight,
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 8,
     marginTop: 2,
-    textAlign: 'center',
   },
   filterLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: 12,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   dropBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
     borderRadius: 20,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: Colors.border,
-    maxWidth: 140,
-    marginHorizontal: 6,
+    maxWidth: 120,
+    marginRight: 8,
   },
-  dropText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.text,
-    maxWidth: 100,
-    marginRight: 4,
-  },
-  zelligeStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 8,
-    height: 20,
-  },
-  zelligeStripSide: { flex: 1, height: 5, overflow: 'hidden', borderRadius: 2 },
-  zelligeDiamond: { width: 24, alignItems: 'center', justifyContent: 'center' },
-  diamondOuter: {
-    width: 12,
-    height: 12,
-    backgroundColor: Colors.secondary,
-    transform: [{ rotate: '45deg' }],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  diamondInner: { width: 5, height: 5, backgroundColor: Colors.primary },
-  scrollContent: {
-    paddingHorizontal: SIDE_PAD - 6,
-    paddingTop: 4,
-    paddingBottom: 4,
-  },
-  cardWrap: {
-    width: CARD_WIDTH,
-    marginRight: 12,
-  },
+  dropText: { fontSize: 13, fontWeight: '600', color: Colors.text, maxWidth: 90, marginRight: 4 },
+  scrollContent: { paddingHorizontal: 12, paddingTop: 4 },
+  cardWrap: { width: CARD_WIDTH, marginHorizontal: CARD_MARGIN },
   card: {
     backgroundColor: Colors.card,
     borderRadius: 16,
@@ -461,9 +388,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: Colors.text,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  metaBlock: { marginTop: 2 },
+  metaBlock: { marginTop: 4 },
   metaSurface: {
     fontSize: 13,
     color: Colors.textLight,
@@ -483,7 +410,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderRadius: 12,
-    width: '100%',
   },
   simButtonText: { color: '#fff', fontSize: 15, fontWeight: '700', marginLeft: 8 },
   counter: {
