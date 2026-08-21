@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import MarocainScreen from './app/index';
 import MREScreen from './app/mre';
 import EtrangerScreen from './app/etranger';
@@ -9,7 +8,6 @@ import ProjetsScreen from './app/projets';
 import ZelligeAccent from './src/components/ZelligeAccent';
 import MoroccanBackground from './src/components/MoroccanBackground';
 import AdBanner from './src/components/AdBanner';
-import { Colors } from './src/constants/theme';
 
 type Tab = 'projets' | 'marocain' | 'mre' | 'etranger';
 
@@ -35,7 +33,7 @@ export default function App() {
 
       <MoroccanBackground />
 
-      <SafeAreaView style={styles.headerContainer} edges={['top']}>
+      <View style={styles.headerContainer}>
         <AdBanner />
 
         <View style={styles.brandingContainer}>
@@ -44,7 +42,7 @@ export default function App() {
         </View>
 
         <ZelligeAccent />
-      </SafeAreaView>
+      </View>
 
       <View style={styles.contentWrapper}>{renderScreen()}</View>
 
@@ -106,6 +104,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: 'transparent',
     zIndex: 10,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 44,
   },
   brandingContainer: {
     paddingVertical: 12,
