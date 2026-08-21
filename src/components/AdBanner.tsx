@@ -12,15 +12,13 @@ export default function AdBanner() {
       >
         <View style={styles.adContent}>
           <View style={styles.adLeft}>
-            <Text style={styles.adBrand}>i-dar Duo</Text>
-            <Text style={styles.adTitle}>Internet libre et illimité à la maison</Text>
-            <Text style={styles.adSubtitle}>✓ Illimité · Sans engagement · Sans installation</Text>
-            <Text style={styles.adPrice}>
-              À partir de <Text style={styles.adPriceStrong}>199 DH</Text>/mois
+            <Text style={styles.adBrand}>i-dar Duo · dès 199 DH/mois</Text>
+            <Text style={styles.adTitle} numberOfLines={1}>
+              Internet illimité à la maison · sans engagement
             </Text>
           </View>
           <View style={styles.adRight}>
-            <Text style={styles.adCta}>DÉCOUVREZ</Text>
+            <Text style={styles.adCta}>VOIR</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -32,26 +30,22 @@ export default function AdBanner() {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    paddingTop: Platform.OS === 'android' ? 12 : 16,
+    paddingTop: Platform.OS === 'android' ? 6 : 8,
     paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingBottom: 4,
     backgroundColor: 'transparent',
   },
   banner: {
     backgroundColor: '#9D0A6A',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
   },
   adContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    minHeight: 90,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    minHeight: 48,
   },
   adLeft: {
     flex: 1,
@@ -60,50 +54,32 @@ const styles = StyleSheet.create({
   },
   adBrand: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  adTitle: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
     marginBottom: 2,
   },
-  adSubtitle: {
+  adTitle: {
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  adPrice: {
-    color: '#fff',
-    fontSize: 12,
-    marginTop: 6,
-    fontWeight: '600',
-  },
-  adPriceStrong: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '500',
   },
   adRight: {
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   adCta: {
     color: '#9D0A6A',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
   },
   adLabel: {
     position: 'absolute',
-    top: 20,
-    right: 20,
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 9,
+    top: Platform.OS === 'android' ? 8 : 10,
+    right: 18,
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 8,
     fontWeight: '600',
   },
 });
