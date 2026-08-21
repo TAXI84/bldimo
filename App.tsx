@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MarocainScreen from './app/index';
 import MREScreen from './app/mre';
 import EtrangerScreen from './app/etranger';
 import ProjetsScreen from './app/projets';
 import ZelligeAccent from './src/components/ZelligeAccent';
+import MoroccanBackground from './src/components/MoroccanBackground';
+import AdBanner from './src/components/AdBanner';
 import { Colors } from './src/constants/theme';
 
 type Tab = 'projets' | 'marocain' | 'mre' | 'etranger';
@@ -27,31 +30,23 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+    <View style={styles.rootContainer}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F4EE" />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>bldimo</Text>
-        <Text style={styles.headerSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
-      </View>
+      <MoroccanBackground />
 
-      {/* Ligne zellige centrée avec motif au milieu */}
-      <View style={styles.zelligeWrap}>
-        <View style={styles.zelligeSide}>
-          <ZelligeAccent />
-        </View>
-        <View style={styles.zelligeCenter}>
-          <View style={styles.diamondOuter}>
-            <View style={styles.diamondInner} />
-          </View>
-        </View>
-        <View style={styles.zelligeSide}>
-          <ZelligeAccent />
-        </View>
-      </View>
-      <View style={styles.zelligeLine2} />
+      <SafeAreaView style={styles.headerContainer} edges={['top']}>
+        <AdBanner />
 
-      <View style={styles.content}>{renderScreen()}</View>
+        <View style={styles.brandingContainer}>
+          <Text style={styles.brandingTitle}>bldimo</Text>
+          <Text style={styles.brandingSubtitle}>Simulateur Aide Immobilière • Maroc</Text>
+        </View>
+
+        <ZelligeAccent />
+      </SafeAreaView>
+
+      <View style={styles.contentWrapper}>{renderScreen()}</View>
 
       <View style={styles.tabBar}>
         <TabButton
@@ -96,7 +91,7 @@ function TabButton({
 }) {
   return (
     <TouchableOpacity style={styles.tabButton} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon} size={22} color={active ? Colors.primary : '#94A3B8'} />
+      <Ionicons name={icon} size={24} color={active ? '#005C9E' : '#94A3B8'} />
       <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
       {active && <View style={styles.activeIndicator} />}
     </TouchableOpacity>
@@ -104,75 +99,56 @@ function TabButton({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    backgroundColor: Colors.primary,
-    paddingTop: Platform.OS === 'android' ? 36 : 46,
-    paddingBottom: 14,
+  rootContainer: {
+    flex: 1,
+    backgroundColor: '#F7F4EE',
+  },
+  headerContainer: {
+    backgroundColor: 'transparent',
+    zIndex: 10,
+  },
+  brandingContainer: {
+    paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: 1.5,
+  brandingTitle: {
+    color: '#005C9E',
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+    marginBottom: 2,
     textAlign: 'center',
   },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
+  brandingSubtitle: {
+    color: '#64748B',
     fontSize: 12,
-    marginTop: 3,
+    fontWeight: '500',
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
-  zelligeWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.background,
-    height: 18,
-  },
-  zelligeSide: {
+  contentWrapper: {
     flex: 1,
-    height: 5,
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    zIndex: 1,
   },
-  zelligeCenter: {
-    width: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  diamondOuter: {
-    width: 14,
-    height: 14,
-    backgroundColor: Colors.secondary,
-    transform: [{ rotate: '45deg' }],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  diamondInner: {
-    width: 6,
-    height: 6,
-    backgroundColor: Colors.primary,
-  },
-  zelligeLine2: {
-    height: 3,
-    backgroundColor: Colors.secondary,
-    opacity: 0.75,
-  },
-  content: { flex: 1 },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'android' ? 48 : 34,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'android' ? 48 : 20,
     elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 8,
     position: 'relative',
   },
   tabLabel: {
@@ -182,15 +158,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabLabelActive: {
-    color: Colors.primary,
+    color: '#005C9E',
     fontWeight: '700',
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: 2,
-    width: 24,
+    bottom: 0,
+    width: 28,
     height: 3,
     borderRadius: 2,
-    backgroundColor: Colors.secondary,
+    backgroundColor: '#0D9488',
   },
 });
